@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -497,6 +499,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </div>
 
 <script>
+// ── Firebase init ──
+firebase.initializeApp({
+  apiKey: "AIzaSyCMWcrF5bmO394emni0U0J_q4s1P0Qbsrw",
+  authDomain: "hirush-task.firebaseapp.com",
+  projectId: "hirush-task",
+  storageBucket: "hirush-task.firebasestorage.app",
+  messagingSenderId: "268911377416",
+  appId: "1:268911377416:web:724a71185832e6c4d625bd"
+});
+const db = firebase.firestore();
+const COL = db.collection('tasks');
+
 const SEED=[
   {id:1,desc:"Implement GCash Top-Up flow for buying HiRush Points.",module:"Payment Gateway",role:"Client",type:"Integration",status:"Pending",priority:"High"},
   {id:2,desc:"The error message on the client profile creation page is not aligned with the Figma design.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"Medium"},
@@ -543,18 +557,44 @@ const SEED=[
   {id:43,desc:"Changes in Application should appear in notification bell.",module:"Notification System",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium"},
 ];
 
-function load(){try{const s=localStorage.getItem('hirush_v3');return s?JSON.parse(s):JSON.parse(JSON.stringify(SEED));}catch{return JSON.parse(JSON.stringify(SEED));}}
-function save(){localStorage.setItem('hirush_v3',JSON.stringify(tasks));}
-let tasks=load();
+let tasks=[];
 let viewFilter='all';
 let prioFilter=null;
 let moduleFilter=null;
-let activeId=null;
+let activeId=null; // Firestore doc ID string
 let delId=null;
 let quickAdding=false;
+let seeded=false;
 
-function nextId(){return tasks.length?Math.max(...tasks.map(t=>t.id))+1:1;}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── Real-time listener ──
+COL.orderBy('order').onSnapshot(snapshot=>{
+  if(snapshot.empty && !seeded){
+    seeded=true;
+    const batch=db.batch();
+    SEED.forEach((t,i)=>{
+      const ref=COL.doc();
+      batch.set(ref,{...t,order:i});
+    });
+    batch.commit();
+    return;
+  }
+  tasks=snapshot.docs.map(doc=>({...doc.data(),fid:doc.id}));
+  renderAll();
+});
+
+// ── Firestore mutations ──
+function addTaskFS(fields){
+  const order=tasks.length?Math.max(...tasks.map(t=>t.order??0))+1:0;
+  return COL.add({...fields,status:'Pending',order});
+}
+function updateTaskFS(fid,fields){
+  COL.doc(fid).update(fields);
+}
+function deleteTaskFS(fid){
+  COL.doc(fid).delete();
+}
 
 function getFiltered(){
   const q=document.getElementById('global-search').value.toLowerCase().trim();
@@ -652,9 +692,10 @@ function renderAll(){
 
 function taskRow(t){
   const isDone=t.status==='DONE';
-  const isActive=t.id===activeId;
-  return `<div class="task-row${isActive?' selected':''}" onclick="selectTask(${t.id})" data-id="${t.id}">
-    <div class="task-checkbox${isDone?' done':''}" onclick="event.stopPropagation();toggleDone(${t.id})" role="checkbox" aria-checked="${isDone}" tabindex="0">
+  const isActive=t.fid===activeId;
+  const fid=esc(t.fid);
+  return `<div class="task-row${isActive?' selected':''}" onclick="selectTask('${fid}')">
+    <div class="task-checkbox${isDone?' done':''}" onclick="event.stopPropagation();toggleDone('${fid}')" role="checkbox" aria-checked="${isDone}" tabindex="0">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
     <div class="prio-icon">${prioIcon(t.priority)}</div>
@@ -662,7 +703,7 @@ function taskRow(t){
     <div class="task-module">${esc(t.module)}</div>
     <div class="task-type"><span class="type-pill">${esc(t.type)}</span></div>
     <div class="task-prio-badge">${pBadge(t.priority)}</div>
-    <button class="task-del" onclick="event.stopPropagation();openDel(${t.id})" aria-label="Delete">
+    <button class="task-del" onclick="event.stopPropagation();openDel('${fid}')" aria-label="Delete">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
     </button>
   </div>`;
@@ -682,32 +723,26 @@ function startQuickAdd(){
   if(viewFilter!=='Pending') setView('Pending', document.querySelector('[data-view="Pending"]'));
   else renderAll();
 }
-function handleQA(e){
+async function handleQA(e){
   if(e.key==='Enter'){
     const v=e.target.value.trim();
     if(!v) return;
-    tasks.unshift({id:nextId(),desc:v,module:'Other',role:'Shared (Global)',type:'Bug Fix',status:'Pending',priority:'Medium'});
-    save();
     quickAdding=false;
-    renderAll();
-    // auto-open the new task
-    selectTask(tasks[0].id);
+    const ref=await addTaskFS({desc:v,module:'Other',role:'Shared (Global)',type:'Bug Fix',priority:'Medium'});
+    selectTask(ref.id);
   }
   if(e.key==='Escape'){quickAdding=false;renderAll();}
 }
 
-function toggleDone(id){
-  const t=tasks.find(x=>x.id===id);
+function toggleDone(fid){
+  const t=tasks.find(x=>x.fid===fid);
   if(!t)return;
-  t.status=t.status==='DONE'?'Pending':'DONE';
-  save();
-  if(activeId===id){populateDetail(t);}
-  renderAll();
+  updateTaskFS(fid,{status:t.status==='DONE'?'Pending':'DONE'});
 }
 
-function selectTask(id){
-  activeId=id;
-  const t=tasks.find(x=>x.id===id);
+function selectTask(fid){
+  activeId=fid;
+  const t=tasks.find(x=>x.fid===fid);
   if(!t)return;
   populateDetail(t);
   document.getElementById('detail-panel').classList.add('open');
@@ -719,20 +754,18 @@ function closeDetail(){
   renderAll();
 }
 function populateDetail(t){
-  document.getElementById('d-id').textContent=`TASK-${String(t.id).padStart(3,'0')} · ${t.role}`;
+  document.getElementById('d-id').textContent=`${t.module} · ${t.role}`;
   document.getElementById('d-desc').value=t.desc;
   ['status','priority','type','module','role'].forEach(k=>{
     const el=document.getElementById('d-'+k);
     if(el) el.value=t[k];
   });
 }
+let patchTimer=null;
 function patchActive(field,value){
-  if(activeId===null)return;
-  const t=tasks.find(x=>x.id===activeId);
-  if(!t)return;
-  t[field]=value;
-  save();
-  renderAll();
+  if(!activeId)return;
+  clearTimeout(patchTimer);
+  patchTimer=setTimeout(()=>updateTaskFS(activeId,{[field]:value}),300);
 }
 
 function setView(v,el){
@@ -757,18 +790,18 @@ function setModule(m,el){
 }
 
 // Delete
-function openDel(id){
-  delId=id;
-  const t=tasks.find(x=>x.id===id);
+function openDel(fid){
+  delId=fid;
+  const t=tasks.find(x=>x.fid===fid);
   document.getElementById('del-desc').textContent=t?`"${t.desc.slice(0,80)}${t.desc.length>80?'…':''}"`:'';
   document.getElementById('del-overlay').classList.add('open');
 }
 function closeDel(){document.getElementById('del-overlay').classList.remove('open');delId=null;}
 function confirmDel(){
-  if(delId===null)return;
+  if(!delId)return;
   if(activeId===delId)closeDetail();
-  tasks=tasks.filter(t=>t.id!==delId);
-  save();closeDel();renderAll();
+  deleteTaskFS(delId);
+  closeDel();
 }
 document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
 document.addEventListener('keydown',e=>{
@@ -776,7 +809,7 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search').focus();}
 });
 
-renderAll();
+// renderAll() is now driven by onSnapshot — no manual call needed
 </script>
 </body>
 </html>
