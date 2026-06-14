@@ -1,642 +1,503 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Hirush — Pending Tasks</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Hirush — Task Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d0d10;
+  --s1:#111115;
+  --s2:#16161b;
+  --s3:#1c1c23;
+  --s4:#22222b;
+  --bd:rgba(255,255,255,0.07);
+  --bd2:rgba(255,255,255,0.12);
+  --t1:#e8e8ee;
+  --t2:#8888a0;
+  --t3:#44445a;
+  --purple:#7c6df0;
+  --purple-bg:rgba(124,109,240,0.12);
+  --red:#f87171;
+  --red-bg:rgba(248,113,113,0.1);
+  --amber:#fb923c;
+  --amber-bg:rgba(251,146,60,0.1);
+  --green:#4ade80;
+  --green-bg:rgba(74,222,128,0.1);
+  --blue:#60a5fa;
+  --blue-bg:rgba(96,165,250,0.1);
+  --slate:#64748b;
+  --slate-bg:rgba(100,116,139,0.12);
+  --r:6px;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);font-size:13px;display:flex;flex-direction:column;}
 
-:root {
-  --bg:        #0b0b0f;
-  --bg2:       #101015;
-  --surface:   #16161e;
-  --card:      #1c1c26;
-  --card-h:    #21212d;
-  --border:    rgba(255,255,255,0.07);
-  --border-md: rgba(255,255,255,0.12);
-  --t1: #eeeef2;
-  --t2: #8888a8;
-  --t3: #55556a;
-  --purple:    #7c6df0;
-  --purple-dim:#3d3578;
-  --purple-glow: rgba(124,109,240,0.18);
-  --red:   #f87171;
-  --red-dim:   rgba(248,113,113,0.12);
-  --amber: #fb923c;
-  --amber-dim: rgba(251,146,60,0.12);
-  --green: #4ade80;
-  --green-dim: rgba(74,222,128,0.12);
-  --blue:  #60a5fa;
-  --blue-dim:  rgba(96,165,250,0.12);
-  --slate: #94a3b8;
-  --slate-dim: rgba(148,163,184,0.1);
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 16px;
+/* ── TOP BAR ── */
+.topbar{
+  height:42px;min-height:42px;
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid var(--bd);
+  background:var(--s1);
+  flex-shrink:0;
 }
+.topbar-brand{
+  width:220px;min-width:220px;
+  display:flex;align-items:center;gap:8px;
+  padding:0 16px;
+  border-right:1px solid var(--bd);
+  height:100%;
+  font-size:13px;font-weight:600;color:var(--t1);
+}
+.brand-icon{width:18px;height:18px;background:var(--purple);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-icon svg{width:10px;height:10px;stroke:#fff;stroke-width:2.5;}
+.topbar-center{flex:1;display:flex;align-items:center;gap:8px;padding:0 16px;}
+.topbar-search{
+  display:flex;align-items:center;gap:6px;
+  background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);
+  padding:5px 10px;width:260px;
+}
+.topbar-search input{background:none;border:none;outline:none;font-family:inherit;font-size:12px;color:var(--t1);width:100%;}
+.topbar-search input::placeholder{color:var(--t3);}
+.topbar-search svg{width:13px;height:13px;stroke:var(--t3);flex-shrink:0;}
+.topbar-actions{display:flex;align-items:center;gap:6px;padding:0 14px;}
+.kbd{font-size:10px;background:var(--s3);border:1px solid var(--bd2);border-radius:4px;padding:2px 5px;color:var(--t3);font-family:monospace;}
 
-html { scroll-behavior: smooth; }
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;overflow:hidden;}
 
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--t1);
-  font-size: 14px;
-  line-height: 1.6;
-  min-height: 100vh;
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;min-width:220px;
+  background:var(--s1);
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  flex-shrink:0;
 }
+.sidebar-section{padding:16px 8px 8px;}
+.sidebar-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);padding:0 8px 6px;}
+.sidebar-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 10px;border-radius:var(--r);cursor:pointer;
+  font-size:12px;color:var(--t2);transition:all .1s;
+  user-select:none;
+}
+.sidebar-item:hover{background:var(--s3);color:var(--t1);}
+.sidebar-item.active{background:var(--s3);color:var(--t1);font-weight:500;}
+.sidebar-item-left{display:flex;align-items:center;gap:7px;}
+.sidebar-item-left svg{width:13px;height:13px;stroke:currentColor;flex-shrink:0;}
+.s-count{font-size:10px;color:var(--t3);background:var(--s4);border-radius:3px;padding:1px 5px;min-width:18px;text-align:center;}
+.sidebar-item.active .s-count{color:var(--t2);}
+.sidebar-divider{height:1px;background:var(--bd);margin:4px 8px;}
 
-/* Subtle grid texture */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
-}
+/* ── MAIN AREA ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
 
-.app { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+.view-header{
+  height:42px;min-height:42px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;
+  border-bottom:1px solid var(--bd);
+  background:var(--s1);
+  flex-shrink:0;
+}
+.view-title{font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:8px;}
+.view-count{font-size:11px;color:var(--t3);font-weight:400;}
+.view-controls{display:flex;align-items:center;gap:6px;}
 
-/* ── NAV ── */
-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem 0 2rem;
-  border-bottom: 0.5px solid var(--border);
-  margin-bottom: 3rem;
+.btn{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:var(--r);
+  border:1px solid var(--bd2);background:transparent;
+  font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit;
+  transition:all .1s;white-space:nowrap;
 }
-.nav-brand { display: flex; align-items: center; gap: 10px; }
-.nav-brand-dot {
-  width: 28px; height: 28px;
-  background: var(--purple);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-}
-.nav-brand-dot svg { width: 15px; height: 15px; stroke: #fff; }
-.nav-brand-name { font-size: 15px; font-weight: 600; letter-spacing: -.01em; color: var(--t1); }
-.nav-brand-name span { color: var(--t3); font-weight: 400; }
-.nav-pills { display: flex; gap: 6px; }
-.nav-pill {
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 0.5px solid var(--border-md);
-  background: transparent;
-  color: var(--t2);
-  cursor: pointer;
-  font-family: inherit;
-  transition: all .15s;
-}
-.nav-pill:hover, .nav-pill.active { background: var(--purple); color: #fff; border-color: var(--purple); }
-.btn-add {
-  display: flex; align-items: center; gap: 7px;
-  background: var(--purple);
-  color: #fff;
-  border: none;
-  border-radius: var(--r-sm);
-  padding: 9px 18px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all .15s;
-  letter-spacing: -.01em;
-}
-.btn-add:hover { background: #6a5dd8; }
-.btn-add svg { width: 14px; height: 14px; stroke: #fff; }
+.btn:hover{background:var(--s3);color:var(--t1);}
+.btn svg{width:13px;height:13px;stroke:currentColor;}
+.btn-primary{background:var(--purple);color:#fff;border-color:var(--purple);}
+.btn-primary:hover{background:#6a5dd8;border-color:#6a5dd8;color:#fff;}
 
-/* ── HERO ── */
-.hero {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 2rem;
-  margin-bottom: 3rem;
-  padding: 2.5rem 2.5rem;
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r-lg);
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 280px; height: 280px;
-  background: radial-gradient(circle, var(--purple-glow) 0%, transparent 70%);
-  pointer-events: none;
-}
-.hero-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--purple);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.hero-label::before {
-  content: '';
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--purple);
-  box-shadow: 0 0 8px var(--purple);
-  animation: pulse 2s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%,100% { opacity: 1; box-shadow: 0 0 8px var(--purple); }
-  50%      { opacity: .5; box-shadow: 0 0 3px var(--purple); }
-}
-.hero-title { font-size: 32px; font-weight: 700; color: var(--t1); letter-spacing: -.02em; line-height: 1.2; margin-bottom: 10px; }
-.hero-title span { color: var(--purple); }
-.hero-sub { font-size: 13px; color: var(--t2); max-width: 440px; line-height: 1.65; }
-.hero-stats { display: flex; gap: 2rem; }
-.hero-stat { text-align: center; }
-.hero-stat-num { font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
-.hero-stat-num.amber { color: var(--amber); }
-.hero-stat-num.green { color: var(--green); }
-.hero-stat-num.blue  { color: var(--blue); }
-.hero-stat-label { font-size: 11px; color: var(--t3); margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
+/* ── TASK LIST ── */
+.task-list{flex:1;overflow-y:auto;}
+.task-list::-webkit-scrollbar{width:4px;}
+.task-list::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
 
-/* ── SECTION HEADING ── */
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
+.group-header{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 18px;
+  background:var(--s1);
+  border-bottom:1px solid var(--bd);
+  position:sticky;top:0;z-index:2;
+  cursor:pointer;user-select:none;
 }
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--t2);
-}
-.section-count {
-  background: var(--purple-dim);
-  color: var(--purple);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-.section-controls { display: flex; gap: 8px; align-items: center; }
-.filter-chip {
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 0.5px solid var(--border-md);
-  background: transparent;
-  color: var(--t3);
-  cursor: pointer;
-  font-family: inherit;
-  transition: all .12s;
-}
-.filter-chip:hover { color: var(--t2); border-color: var(--border-md); }
-.filter-chip.on { background: var(--card); color: var(--t1); border-color: var(--border-md); }
+.group-header-name{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.group-header-count{font-size:10px;color:var(--t3);}
+.group-toggle{width:14px;height:14px;stroke:var(--t3);}
 
-/* ── SEARCH ── */
-.search-wrap { position: relative; }
-.search-wrap input {
-  background: var(--surface);
-  border: 0.5px solid var(--border-md);
-  border-radius: var(--r-sm);
-  padding: 7px 10px 7px 32px;
-  font-size: 12px;
-  font-family: inherit;
-  color: var(--t1);
-  outline: none;
-  width: 200px;
-  transition: border-color .15s;
+.task-row{
+  display:grid;
+  grid-template-columns:20px 22px 1fr 140px 90px 80px 28px;
+  align-items:center;gap:0;
+  padding:0 18px;
+  height:36px;
+  border-bottom:1px solid var(--bd);
+  cursor:pointer;
+  transition:background .08s;
 }
-.search-wrap input::placeholder { color: var(--t3); }
-.search-wrap input:focus { border-color: var(--purple); }
-.search-icon {
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-  width: 13px; height: 13px; stroke: var(--t3); pointer-events: none;
-}
+.task-row:hover{background:var(--s2);}
+.task-row.selected{background:var(--s3);}
 
-/* ── PENDING TASK CARDS GRID ── */
-.pending-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 12px;
-  margin-bottom: 3rem;
+.task-checkbox{
+  width:14px;height:14px;border-radius:3px;
+  border:1px solid var(--t3);background:transparent;
+  cursor:pointer;flex-shrink:0;transition:all .1s;display:flex;align-items:center;justify-content:center;
 }
-.task-card {
-  background: var(--card);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 1.1rem 1.25rem;
-  transition: all .18s;
-  cursor: default;
-  position: relative;
-  overflow: hidden;
-}
-.task-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 3px; height: 100%;
-  border-radius: 4px 0 0 4px;
-  background: var(--t3);
-  transition: background .18s;
-}
-.task-card.high::before  { background: var(--red); }
-.task-card.medium::before { background: var(--amber); }
-.task-card.low::before   { background: var(--slate); }
-.task-card:hover { background: var(--card-h); border-color: var(--border-md); transform: translateY(-1px); }
-.task-card:hover.high { box-shadow: 0 4px 24px rgba(248,113,113,0.08); }
-.task-card:hover.medium { box-shadow: 0 4px 24px rgba(251,146,60,0.08); }
+.task-checkbox.done{background:var(--green);border-color:var(--green);}
+.task-checkbox.done svg{display:block;}
+.task-checkbox svg{display:none;width:9px;height:9px;stroke:#000;stroke-width:3;}
+.task-checkbox:hover:not(.done){border-color:var(--t2);}
 
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.card-module {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  color: var(--t3);
-  background: var(--bg2);
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 0.5px solid var(--border);
-}
-.card-header-right { display: flex; align-items: center; gap: 6px; }
-.prio-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-.prio-high   { background: var(--red-dim);   color: var(--red); }
-.prio-medium { background: var(--amber-dim); color: var(--amber); }
-.prio-low    { background: var(--slate-dim); color: var(--slate); }
-.delete-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  color: var(--t3);
-  line-height: 0;
-  transition: all .12s;
-  opacity: 0;
-}
-.task-card:hover .delete-btn { opacity: 1; }
-.delete-btn:hover { background: var(--red-dim); color: var(--red); }
-.delete-btn svg { width: 13px; height: 13px; stroke: currentColor; }
+.prio-icon{display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.prio-icon svg{width:12px;height:12px;flex-shrink:0;}
 
-.card-desc {
-  font-size: 13px;
-  color: var(--t1);
-  line-height: 1.55;
-  margin-bottom: 12px;
-  font-weight: 400;
+.task-desc{
+  font-size:12px;color:var(--t1);
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  padding:0 8px;
 }
-.card-footer { display: flex; align-items: center; gap: 8px; }
-.card-type {
-  font-size: 10px;
-  color: var(--t3);
-  background: var(--bg2);
-  padding: 2px 7px;
-  border-radius: 4px;
-  border: 0.5px solid var(--border);
-}
-.card-role {
-  font-size: 10px;
-  color: var(--t3);
-}
+.task-desc.done-text{color:var(--t3);text-decoration:line-through;}
 
-/* ── SECONDARY SECTIONS ── */
-.secondary-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 3rem;
+.task-module{
+  font-size:11px;color:var(--t3);
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  padding:0 4px;
 }
-.list-card {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r-lg);
-  overflow: hidden;
+.task-type{padding:0 4px;}
+.type-pill{
+  font-size:10px;color:var(--t3);
+  background:var(--s3);border:1px solid var(--bd);
+  border-radius:3px;padding:1px 6px;
+  display:inline-block;max-width:80px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
 }
-.list-card-head {
-  padding: .9rem 1.25rem;
-  border-bottom: 0.5px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.list-card-title {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--t3);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.dot-green { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
-.dot-blue  { width: 6px; height: 6px; border-radius: 50%; background: var(--blue);  display: inline-block; }
-.list-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: 12px;
-  padding: 10px 1.25rem;
-  border-bottom: 0.5px solid var(--border);
-  transition: background .12s;
-}
-.list-row:last-child { border-bottom: none; }
-.list-row:hover { background: var(--card); }
-.list-row-desc { font-size: 12px; color: var(--t2); line-height: 1.45; }
-.list-row-mod  { font-size: 10px; color: var(--t3); white-space: nowrap; margin-top: 2px; }
+.task-prio-badge{padding:0 4px;}
+.p-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;}
+.p-high{color:var(--red);background:var(--red-bg);}
+.p-medium{color:var(--amber);background:var(--amber-bg);}
+.p-low{color:var(--slate);background:var(--slate-bg);}
 
-/* ── BOTTOM STATS ── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  margin-bottom: 3rem;
+.task-del{
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;
+  background:none;border:none;cursor:pointer;
+  color:var(--t3);border-radius:4px;padding:3px;
+  transition:all .1s;
 }
-.stat-card {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 1rem;
-}
-.stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--t3); margin-bottom: 8px; }
-.stat-num   { font-size: 20px; font-weight: 700; color: var(--t1); letter-spacing: -.02em; }
-.stat-bar { margin-top: 8px; height: 3px; background: var(--border); border-radius: 999px; overflow: hidden; }
-.stat-bar-fill { height: 100%; border-radius: 999px; background: var(--purple); }
+.task-row:hover .task-del{opacity:1;}
+.task-del:hover{background:var(--red-bg);color:var(--red);}
+.task-del svg{width:13px;height:13px;stroke:currentColor;}
 
-/* ── MODAL ── */
-.overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.65);
-  backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200;
-  opacity: 0; pointer-events: none;
-  transition: opacity .2s;
-}
-.overlay.open { opacity: 1; pointer-events: all; }
-.modal {
-  background: var(--surface);
-  border: 0.5px solid var(--border-md);
-  border-radius: var(--r-lg);
-  padding: 2rem;
-  width: 500px;
-  max-width: calc(100vw - 2rem);
-  transform: translateY(12px) scale(.98);
-  transition: transform .2s;
-}
-.overlay.open .modal { transform: translateY(0) scale(1); }
-.modal-title { font-size: 16px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 1.5rem; color: var(--t1); }
-.form-group { margin-bottom: 1rem; }
-.form-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--t3); margin-bottom: 6px; }
-.form-group input, .form-group select, .form-group textarea {
-  width: 100%;
-  background: var(--card);
-  border: 0.5px solid var(--border-md);
-  border-radius: var(--r-sm);
-  padding: 9px 12px;
-  font-size: 13px;
-  font-family: inherit;
-  color: var(--t1);
-  outline: none;
-  transition: border-color .15s;
-}
-.form-group input::placeholder, .form-group textarea::placeholder { color: var(--t3); }
-.form-group select option { background: var(--card); color: var(--t1); }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--purple); }
-.form-group textarea { resize: vertical; min-height: 80px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.75rem; }
-.btn-ghost {
-  padding: 8px 18px;
-  border: 0.5px solid var(--border-md);
-  border-radius: var(--r-sm);
-  background: transparent;
-  font-size: 13px; font-family: inherit;
-  color: var(--t2);
-  cursor: pointer;
-  transition: all .12s;
-}
-.btn-ghost:hover { background: var(--card); color: var(--t1); }
-.btn-danger {
-  background: #7f1d1d;
-  color: var(--red);
-  border: none;
-  border-radius: var(--r-sm);
-  padding: 8px 18px;
-  font-size: 13px; font-weight: 500;
-  cursor: pointer; font-family: inherit;
-  transition: background .12s;
-}
-.btn-danger:hover { background: #991b1b; }
+.empty-group{padding:14px 18px;font-size:12px;color:var(--t3);}
 
-.empty { text-align: center; padding: 4rem 1rem; color: var(--t3); font-size: 13px; }
-.empty svg { width: 40px; height: 40px; stroke: var(--t3); margin-bottom: 1rem; opacity: .4; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 999px; }
-
-@media (max-width: 700px) {
-  .hero { grid-template-columns: 1fr; }
-  .hero-stats { gap: 1rem; }
-  .secondary-grid { grid-template-columns: 1fr; }
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
-  nav .nav-pills { display: none; }
+/* ── STATUS BAR ── */
+.statusbar{
+  height:26px;min-height:26px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 18px;
+  border-top:1px solid var(--bd);
+  background:var(--s1);
+  flex-shrink:0;
 }
+.sb-item{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:5px;}
+.sb-dot{width:6px;height:6px;border-radius:50%;}
+
+/* ── DETAIL PANEL ── */
+.detail{
+  width:0;min-width:0;
+  background:var(--s1);
+  border-left:1px solid var(--bd);
+  overflow:hidden;
+  transition:width .18s ease;
+  flex-shrink:0;
+  display:flex;flex-direction:column;
+}
+.detail.open{width:360px;min-width:360px;}
+.detail-inner{width:360px;display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.detail-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  border-bottom:1px solid var(--bd);
+  flex-shrink:0;
+}
+.detail-header-title{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.detail-close{background:none;border:none;cursor:pointer;color:var(--t3);padding:3px;border-radius:4px;display:flex;}
+.detail-close:hover{background:var(--s3);color:var(--t1);}
+.detail-close svg{width:14px;height:14px;stroke:currentColor;}
+.detail-body{flex:1;overflow-y:auto;padding:16px;}
+.detail-body::-webkit-scrollbar{width:4px;}
+.detail-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
+
+.detail-desc{
+  font-size:13px;color:var(--t1);line-height:1.65;
+  border:1px solid transparent;border-radius:var(--r);
+  padding:6px 8px;margin:-6px -8px 16px;
+  cursor:text;outline:none;
+  transition:border-color .1s;min-height:60px;resize:none;
+  background:transparent;font-family:inherit;width:100%;
+}
+.detail-desc:focus,.detail-desc:hover{border-color:var(--bd2);background:var(--s2);}
+
+.detail-field{margin-bottom:12px;}
+.detail-field-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:5px;}
+.detail-field select,.detail-field input{
+  width:100%;background:var(--s2);border:1px solid var(--bd2);
+  border-radius:var(--r);padding:6px 9px;font-size:12px;
+  font-family:inherit;color:var(--t1);outline:none;
+  transition:border-color .12s;
+}
+.detail-field select option{background:var(--s2);color:var(--t1);}
+.detail-field select:focus,.detail-field input:focus{border-color:var(--purple);}
+.detail-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.detail-id{font-size:10px;color:var(--t3);font-family:monospace;margin-bottom:16px;}
+.detail-actions{padding:12px 16px;border-top:1px solid var(--bd);flex-shrink:0;display:flex;gap:8px;}
+
+/* ── QUICK ADD ROW ── */
+.quick-add-row{
+  display:grid;
+  grid-template-columns:20px 22px 1fr 140px 90px 80px 28px;
+  align-items:center;
+  padding:0 18px;height:36px;
+  border-bottom:1px solid var(--bd);
+  background:var(--s2);
+}
+.quick-add-input{
+  background:none;border:none;outline:none;
+  font-family:inherit;font-size:12px;color:var(--t1);
+  padding:0 8px;width:100%;
+}
+.quick-add-input::placeholder{color:var(--t3);}
+
+/* ── CONFIRM DIALOG ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  z-index:300;opacity:0;pointer-events:none;transition:opacity .15s;
+}
+.overlay.open{opacity:1;pointer-events:all;}
+.dialog{
+  background:var(--s2);border:1px solid var(--bd2);
+  border-radius:10px;padding:20px;width:340px;
+  transform:scale(.96);transition:transform .15s;
+}
+.overlay.open .dialog{transform:scale(1);}
+.dialog h3{font-size:14px;font-weight:600;margin-bottom:8px;}
+.dialog p{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:16px;}
+.dialog-actions{display:flex;gap:8px;justify-content:flex-end;}
+.btn-del{background:#7f1d1d;color:var(--red);border:none;border-radius:var(--r);padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;}
+.btn-del:hover{background:#991b1b;}
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- NAV -->
-  <nav>
-    <div class="nav-brand">
-      <div class="nav-brand-dot">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <span class="nav-brand-name">Hirush <span>/ Task Tracker</span></span>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
-    <div class="nav-pills">
-      <button class="nav-pill active" onclick="scrollTo({top:0,behavior:'smooth'})">Overview</button>
-      <button class="nav-pill" onclick="document.getElementById('pending-section').scrollIntoView({behavior:'smooth'})">Pending</button>
-      <button class="nav-pill" onclick="document.getElementById('done-section').scrollIntoView({behavior:'smooth'})">Done</button>
-    </div>
-    <button class="btn-add" onclick="openAddModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Task
-    </button>
-  </nav>
-
-  <!-- HERO -->
-  <div class="hero">
-    <div>
-      <div class="hero-label">Live board</div>
-      <div class="hero-title">
-        <span id="hero-pending-num">31</span> tasks<br>still pending
-      </div>
-      <div class="hero-sub">Track, prioritize, and clear every open item across Hirush modules. High-priority items are highlighted — tackle those first.</div>
-    </div>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-num amber" id="hs-high">0</div>
-        <div class="hero-stat-label">High prio</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num blue" id="hs-inprog">0</div>
-        <div class="hero-stat-label">In progress</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num green" id="hs-done">0</div>
-        <div class="hero-stat-label">Done</div>
-      </div>
+    Hirush Tasks
+  </div>
+  <div class="topbar-center">
+    <div class="topbar-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="global-search" placeholder="Search tasks…" oninput="renderAll()"/>
     </div>
   </div>
-
-  <!-- MODULE STATS -->
-  <div class="stats-row" id="stats-row"></div>
-
-  <!-- PENDING TASKS -->
-  <div id="pending-section">
-    <div class="section-head">
-      <div class="section-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Pending Tasks
-        <span class="section-count" id="pending-count">0</span>
-      </div>
-      <div class="section-controls">
-        <div id="prio-filters" style="display:flex;gap:6px;">
-          <button class="filter-chip on" data-prio="all">All priorities</button>
-          <button class="filter-chip" data-prio="High">High</button>
-          <button class="filter-chip" data-prio="Medium">Medium</button>
-          <button class="filter-chip" data-prio="Low">Low</button>
-        </div>
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="search-input" placeholder="Search…" oninput="renderPending()" />
-        </div>
-      </div>
-    </div>
-    <div class="pending-grid" id="pending-grid"></div>
-  </div>
-
-  <!-- DONE + IN PROGRESS -->
-  <div class="secondary-grid" id="done-section">
-    <div class="list-card">
-      <div class="list-card-head">
-        <div class="list-card-title"><span class="dot-blue"></span>In Progress</div>
-        <span class="section-count" id="inprog-count" style="background:rgba(96,165,250,.15);color:var(--blue);">0</span>
-      </div>
-      <div id="inprog-list"></div>
-    </div>
-    <div class="list-card">
-      <div class="list-card-head">
-        <div class="list-card-title"><span class="dot-green"></span>Completed</div>
-        <span class="section-count" id="done-count" style="background:var(--green-dim);color:var(--green);">0</span>
-      </div>
-      <div id="done-list"></div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Add Modal -->
-<div class="overlay" id="add-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-h">
-  <div class="modal">
-    <div class="modal-title" id="modal-h">New pending task</div>
-    <div class="form-group">
-      <label class="form-label" for="f-desc">Description *</label>
-      <textarea id="f-desc" placeholder="What needs to be done?"></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" for="f-module">Module *</label>
-        <select id="f-module">
-          <option value="">Select…</option>
-          <option>Payment Gateway</option><option>Profile Creation</option>
-          <option>Profile Page</option><option>Account Settings</option>
-          <option>Job Feed / Search</option><option>Get Paid / Earnings</option>
-          <option>Contracts &amp; Tracking</option><option>Scheduling System</option>
-          <option>Messaging System</option><option>Landing Page</option>
-          <option>Legal Pages</option><option>Application Page</option>
-          <option>Signup Page</option><option>Notification System</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="f-role">User role</label>
-        <select id="f-role">
-          <option>Shared (Global)</option><option>Freelancer</option>
-          <option>Client</option><option>Client / Visitor</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" for="f-type">Type</label>
-        <select id="f-type">
-          <option>Bug Fix</option><option>Feature</option>
-          <option>UI Improvement</option><option>Optimization</option>
-          <option>Integration</option><option>Policy / Logic</option>
-          <option>QA / Testing</option><option>Cleanup</option><option>Other</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="f-priority">Priority</label>
-        <select id="f-priority">
-          <option value="High">High</option>
-          <option value="Medium" selected>Medium</option>
-          <option value="Low">Low</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeAdd()">Cancel</button>
-      <button class="btn-add" onclick="addTask()">Add task</button>
-    </div>
+  <div class="topbar-actions">
+    <span class="kbd">⌘K</span>
   </div>
 </div>
 
-<!-- Delete Modal -->
-<div class="overlay" id="del-overlay" role="dialog" aria-modal="true" aria-labelledby="del-h">
-  <div class="modal" style="max-width:400px;">
-    <div class="modal-title" id="del-h">Delete this task?</div>
-    <p style="font-size:13px;color:var(--t2);line-height:1.6;" id="del-desc"></p>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeDel()">Cancel</button>
-      <button class="btn-danger" onclick="confirmDel()">Delete task</button>
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Views</div>
+      <div class="sidebar-item active" data-view="all" onclick="setView('all',this)">
+        <div class="sidebar-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          All tasks
+        </div>
+        <span class="s-count" id="sv-all">0</span>
+      </div>
+      <div class="sidebar-item" data-view="Pending" onclick="setView('Pending',this)">
+        <div class="sidebar-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Pending
+        </div>
+        <span class="s-count" id="sv-pending">0</span>
+      </div>
+      <div class="sidebar-item" data-view="In Progress" onclick="setView('In Progress',this)">
+        <div class="sidebar-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-7.89"/></svg>
+          In progress
+        </div>
+        <span class="s-count" id="sv-inprog">0</span>
+      </div>
+      <div class="sidebar-item" data-view="DONE" onclick="setView('DONE',this)">
+        <div class="sidebar-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Done
+        </div>
+        <span class="s-count" id="sv-done">0</span>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Priority</div>
+      <div class="sidebar-item" data-prio="High" onclick="setPrio('High',this)">
+        <div class="sidebar-item-left">
+          <svg viewBox="0 0 24 24" fill="var(--red)" stroke="none"><path d="M12 2L2 19h20L12 2z"/></svg>
+          High
+        </div>
+        <span class="s-count" id="sp-high">0</span>
+      </div>
+      <div class="sidebar-item" data-prio="Medium" onclick="setPrio('Medium',this)">
+        <div class="sidebar-item-left">
+          <svg viewBox="0 0 24 24" fill="var(--amber)" stroke="none"><rect x="3" y="10" width="18" height="4" rx="2"/></svg>
+          Medium
+        </div>
+        <span class="s-count" id="sp-med">0</span>
+      </div>
+      <div class="sidebar-item" data-prio="Low" onclick="setPrio('Low',this)">
+        <div class="sidebar-item-left">
+          <svg viewBox="0 0 24 24" fill="var(--slate)" stroke="none"><path d="M12 22L2 5h20L12 22z"/></svg>
+          Low
+        </div>
+        <span class="s-count" id="sp-low">0</span>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Modules</div>
+      <div id="module-sidebar"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="view-header">
+      <div class="view-title" id="view-title">All tasks <span class="view-count" id="view-count"></span></div>
+      <div class="view-controls">
+        <button class="btn btn-primary" onclick="startQuickAdd()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New task
+        </button>
+      </div>
+    </div>
+
+    <div class="task-list" id="task-list"></div>
+
+    <div class="statusbar">
+      <div class="sb-item"><span class="sb-dot" style="background:var(--amber)"></span><span id="sb-pending">0 pending</span></div>
+      <div class="sb-item"><span class="sb-dot" style="background:var(--blue)"></span><span id="sb-inprog">0 in progress</span></div>
+      <div class="sb-item"><span class="sb-dot" style="background:var(--green)"></span><span id="sb-done">0 done</span></div>
+      <div class="sb-item" style="margin-left:auto;"><span id="sb-total" style="color:var(--t3)"></span></div>
+    </div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="detail" id="detail-panel">
+    <div class="detail-inner">
+      <div class="detail-header">
+        <span class="detail-header-title">Task detail</span>
+        <button class="detail-close" onclick="closeDetail()" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="detail-body">
+        <div class="detail-id" id="d-id"></div>
+        <textarea class="detail-desc" id="d-desc" rows="4" oninput="patchActive('desc',this.value)" placeholder="Task description…"></textarea>
+        <div class="detail-field">
+          <div class="detail-field-label">Status</div>
+          <select id="d-status" onchange="patchActive('status',this.value)">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="DONE">Done</option>
+          </select>
+        </div>
+        <div class="detail-field-row">
+          <div class="detail-field">
+            <div class="detail-field-label">Priority</div>
+            <select id="d-priority" onchange="patchActive('priority',this.value)">
+              <option>High</option><option>Medium</option><option>Low</option>
+            </select>
+          </div>
+          <div class="detail-field">
+            <div class="detail-field-label">Type</div>
+            <select id="d-type" onchange="patchActive('type',this.value)">
+              <option>Bug Fix</option><option>Feature</option><option>UI Improvement</option>
+              <option>Optimization</option><option>Integration</option><option>Policy / Logic</option>
+              <option>QA / Testing</option><option>Cleanup</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">Module</div>
+          <select id="d-module" onchange="patchActive('module',this.value)">
+            <option>Payment Gateway</option><option>Profile Creation</option>
+            <option>Profile Page</option><option>Account Settings</option>
+            <option>Job Feed / Search</option><option>Get Paid / Earnings</option>
+            <option>Contracts &amp; Tracking</option><option>Scheduling System</option>
+            <option>Messaging System</option><option>Landing Page</option>
+            <option>Legal Pages</option><option>Application Page</option>
+            <option>Signup Page</option><option>Notification System</option><option>Other</option>
+          </select>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">User role</div>
+          <select id="d-role" onchange="patchActive('role',this.value)">
+            <option>Shared (Global)</option><option>Freelancer</option>
+            <option>Client</option><option>Client / Visitor</option>
+          </select>
+        </div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn" style="color:var(--red);border-color:var(--red-bg);background:var(--red-bg);" onclick="openDel(activeId)">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          Delete task
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- Delete confirm -->
+<div class="overlay" id="del-overlay">
+  <div class="dialog">
+    <h3>Delete task?</h3>
+    <p id="del-desc"></p>
+    <div class="dialog-actions">
+      <button class="btn" onclick="closeDel()">Cancel</button>
+      <button class="btn-del" onclick="confirmDel()">Delete</button>
     </div>
   </div>
 </div>
 
 <script>
-const SEED = [
+const SEED=[
   {id:1,desc:"Implement GCash Top-Up flow for buying HiRush Points.",module:"Payment Gateway",role:"Client",type:"Integration",status:"Pending",priority:"High"},
   {id:2,desc:"The error message on the client profile creation page is not aligned with the Figma design.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"Medium"},
   {id:3,desc:"Unable to access the client dashboard due to a pending phone number verification step.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"High"},
@@ -682,155 +543,238 @@ const SEED = [
   {id:43,desc:"Changes in Application should appear in notification bell.",module:"Notification System",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium"},
 ];
 
-function load() {
-  try { const s = localStorage.getItem('hirush_v2'); return s ? JSON.parse(s) : JSON.parse(JSON.stringify(SEED)); }
-  catch { return JSON.parse(JSON.stringify(SEED)); }
-}
-function save() { localStorage.setItem('hirush_v2', JSON.stringify(tasks)); }
+function load(){try{const s=localStorage.getItem('hirush_v3');return s?JSON.parse(s):JSON.parse(JSON.stringify(SEED));}catch{return JSON.parse(JSON.stringify(SEED));}}
+function save(){localStorage.setItem('hirush_v3',JSON.stringify(tasks));}
+let tasks=load();
+let viewFilter='all';
+let prioFilter=null;
+let moduleFilter=null;
+let activeId=null;
+let delId=null;
+let quickAdding=false;
 
-let tasks = load();
-let prioFilter = 'all';
-let delId = null;
+function nextId(){return tasks.length?Math.max(...tasks.map(t=>t.id))+1:1;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function nextId() { return tasks.length ? Math.max(...tasks.map(t=>t.id))+1 : 1; }
-
-function renderAll() {
-  const pending  = tasks.filter(t=>t.status==='Pending');
-  const done     = tasks.filter(t=>t.status==='DONE');
-  const inprog   = tasks.filter(t=>t.status==='In Progress');
-  const highPend = pending.filter(t=>t.priority==='High');
-
-  // hero
-  document.getElementById('hero-pending-num').textContent = pending.length;
-  document.getElementById('hs-high').textContent   = highPend.length;
-  document.getElementById('hs-inprog').textContent = inprog.length;
-  document.getElementById('hs-done').textContent   = done.length;
-
-  renderStats(pending);
-  renderPending();
-  renderList('inprog-list', inprog, 'inprog-count');
-  renderList('done-list', done, 'done-count');
-}
-
-function renderStats(pending) {
-  const modCounts = {};
-  tasks.forEach(t=>{ modCounts[t.module]=(modCounts[t.module]||0)+1; });
-  const top = Object.entries(modCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const max = top[0]?.[1] || 1;
-  const el = document.getElementById('stats-row');
-  el.innerHTML = top.map(([mod, count]) => {
-    const pendCount = pending.filter(t=>t.module===mod).length;
-    return `<div class="stat-card">
-      <div class="stat-label">${esc(mod.replace(' / ',' /\n').replace(' System','').replace(' & ','/ '))}</div>
-      <div class="stat-num">${count}</div>
-      <div class="stat-bar"><div class="stat-bar-fill" style="width:${Math.round(count/max*100)}%"></div></div>
-      <div style="font-size:10px;color:var(--t3);margin-top:5px;">${pendCount} pending</div>
-    </div>`;
-  }).join('');
-}
-
-function renderPending() {
-  const q = document.getElementById('search-input').value.toLowerCase().trim();
-  const pending = tasks.filter(t => {
-    if (t.status !== 'Pending') return false;
-    if (prioFilter !== 'all' && t.priority !== prioFilter) return false;
-    if (q && !t.desc.toLowerCase().includes(q) && !t.module.toLowerCase().includes(q) && !t.type.toLowerCase().includes(q)) return false;
+function getFiltered(){
+  const q=document.getElementById('global-search').value.toLowerCase().trim();
+  return tasks.filter(t=>{
+    if(viewFilter!=='all'&&t.status!==viewFilter)return false;
+    if(prioFilter&&t.priority!==prioFilter)return false;
+    if(moduleFilter&&t.module!==moduleFilter)return false;
+    if(q&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q))return false;
     return true;
   });
-  // sort: High first
-  pending.sort((a,b)=>{ const o={High:0,Medium:1,Low:2}; return (o[a.priority]??1)-(o[b.priority]??1); });
+}
 
-  document.getElementById('pending-count').textContent = pending.length;
-  const grid = document.getElementById('pending-grid');
-  if (!pending.length) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div>No tasks match your filter.</div>
-    </div>`;
-    return;
+function prioIcon(p){
+  if(p==='High') return `<svg viewBox="0 0 24 24" fill="var(--red)" stroke="none" width="12" height="12"><path d="M12 2L2 19h20L12 2z"/></svg>`;
+  if(p==='Medium') return `<svg viewBox="0 0 24 24" fill="var(--amber)" stroke="none" width="12" height="12"><rect x="3" y="10" width="18" height="4" rx="2"/></svg>`;
+  return `<svg viewBox="0 0 24 24" fill="var(--slate)" stroke="none" width="12" height="12"><path d="M12 22L2 5h20L12 22z"/></svg>`;
+}
+function pBadge(p){
+  const cls={High:'p-high',Medium:'p-medium',Low:'p-low'}[p]||'p-low';
+  return `<span class="p-badge ${cls}">${esc(p)}</span>`;
+}
+
+function renderAll(){
+  const filtered=getFiltered();
+  const pending=tasks.filter(t=>t.status==='Pending');
+  const inprog=tasks.filter(t=>t.status==='In Progress');
+  const done=tasks.filter(t=>t.status==='DONE');
+
+  // sidebar counts
+  document.getElementById('sv-all').textContent=tasks.length;
+  document.getElementById('sv-pending').textContent=pending.length;
+  document.getElementById('sv-inprog').textContent=inprog.length;
+  document.getElementById('sv-done').textContent=done.length;
+  document.getElementById('sp-high').textContent=tasks.filter(t=>t.priority==='High').length;
+  document.getElementById('sp-med').textContent=tasks.filter(t=>t.priority==='Medium').length;
+  document.getElementById('sp-low').textContent=tasks.filter(t=>t.priority==='Low').length;
+
+  // module sidebar
+  const modCounts={};
+  tasks.forEach(t=>{modCounts[t.module]=(modCounts[t.module]||0)+1;});
+  const mods=Object.entries(modCounts).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('module-sidebar').innerHTML=mods.map(([m,c])=>`
+    <div class="sidebar-item ${moduleFilter===m?'active':''}" onclick="setModule(${JSON.stringify(m)},this)">
+      <div class="sidebar-item-left" style="overflow:hidden;">
+        <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${esc(m)}</span>
+      </div>
+      <span class="s-count">${c}</span>
+    </div>`).join('');
+
+  // view title
+  const titles={all:'All tasks','Pending':'Pending','In Progress':'In progress','DONE':'Done'};
+  document.getElementById('view-title').innerHTML=`${titles[viewFilter]||viewFilter} <span class="view-count">${filtered.length} tasks</span>`;
+
+  // status bar
+  document.getElementById('sb-pending').textContent=`${pending.length} pending`;
+  document.getElementById('sb-inprog').textContent=`${inprog.length} in progress`;
+  document.getElementById('sb-done').textContent=`${done.length} done`;
+  document.getElementById('sb-total').textContent=`${tasks.length} total`;
+
+  // task list — group by status if "all" view
+  const list=document.getElementById('task-list');
+  let html='';
+
+  if(viewFilter==='all'){
+    const groups=[
+      {label:'In progress',status:'In Progress',color:'var(--blue)'},
+      {label:'Pending',status:'Pending',color:'var(--amber)'},
+      {label:'Done',status:'DONE',color:'var(--green)'},
+    ];
+    groups.forEach(g=>{
+      const rows=filtered.filter(t=>t.status===g.status);
+      html+=`<div class="group-header">
+        <span class="group-header-name" style="color:${g.color}">${g.label}</span>
+        <span class="group-header-count">${rows.length}</span>
+      </div>`;
+      if(!rows.length){html+=`<div class="empty-group">No tasks</div>`;return;}
+      rows.forEach(t=>{html+=taskRow(t);});
+    });
+  } else {
+    // quick add row at top when adding
+    if(quickAdding&&(viewFilter==='Pending'||viewFilter==='all')){
+      html+=quickAddRow();
+    }
+    filtered.forEach(t=>{html+=taskRow(t);});
+    if(!filtered.length) html=`<div class="empty-group" style="padding:32px 18px;color:var(--t3);">No tasks match the current filter.</div>`;
   }
-  grid.innerHTML = pending.map(t => `
-    <div class="task-card ${t.priority.toLowerCase()}">
-      <div class="card-header">
-        <span class="card-module">${esc(t.module)}</span>
-        <div class="card-header-right">
-          <span class="prio-badge prio-${t.priority.toLowerCase()}">${esc(t.priority)}</span>
-          <button class="delete-btn" onclick="openDel(${t.id})" aria-label="Delete task">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="card-desc">${esc(t.desc)}</div>
-      <div class="card-footer">
-        <span class="card-type">${esc(t.type)}</span>
-        <span class="card-role">${esc(t.role)}</span>
-      </div>
-    </div>`).join('');
+
+  list.innerHTML=html;
+
+  if(quickAdding){
+    const inp=document.getElementById('qa-input');
+    if(inp){inp.focus();}
+  }
 }
 
-function renderList(elId, list, countId) {
-  const count = document.getElementById(countId);
-  if (count) count.textContent = list.length;
-  const el = document.getElementById(elId);
-  if (!list.length) { el.innerHTML = `<div class="empty">Nothing here.</div>`; return; }
-  el.innerHTML = list.map(t=>`
-    <div class="list-row">
-      <div>
-        <div class="list-row-desc">${esc(t.desc)}</div>
-        <div class="list-row-mod">${esc(t.module)} &middot; ${esc(t.type)}</div>
-      </div>
-      <span class="prio-badge prio-${t.priority.toLowerCase()}" style="font-size:9px;white-space:nowrap;">${esc(t.priority)}</span>
-    </div>`).join('');
+function taskRow(t){
+  const isDone=t.status==='DONE';
+  const isActive=t.id===activeId;
+  return `<div class="task-row${isActive?' selected':''}" onclick="selectTask(${t.id})" data-id="${t.id}">
+    <div class="task-checkbox${isDone?' done':''}" onclick="event.stopPropagation();toggleDone(${t.id})" role="checkbox" aria-checked="${isDone}" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="prio-icon">${prioIcon(t.priority)}</div>
+    <div class="task-desc${isDone?' done-text':''}">${esc(t.desc)}</div>
+    <div class="task-module">${esc(t.module)}</div>
+    <div class="task-type"><span class="type-pill">${esc(t.type)}</span></div>
+    <div class="task-prio-badge">${pBadge(t.priority)}</div>
+    <button class="task-del" onclick="event.stopPropagation();openDel(${t.id})" aria-label="Delete">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+    </button>
+  </div>`;
 }
 
-// Priority filter
-document.getElementById('prio-filters').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-chip');
-  if (!btn) return;
-  prioFilter = btn.dataset.prio;
-  document.querySelectorAll('#prio-filters .filter-chip').forEach(b=>b.classList.toggle('on', b===btn));
-  renderPending();
-});
-
-// Add
-function openAddModal() {
-  ['f-desc','f-module'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-role').value='Shared (Global)';
-  document.getElementById('f-type').value='Bug Fix';
-  document.getElementById('f-priority').value='Medium';
-  document.getElementById('add-overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('f-desc').focus(),100);
+function quickAddRow(){
+  return `<div class="quick-add-row">
+    <div></div><div></div>
+    <input class="quick-add-input" id="qa-input" placeholder="Task description — press Enter to add, Esc to cancel"
+      onkeydown="handleQA(event)" />
+    <div></div><div></div><div></div><div></div>
+  </div>`;
 }
-function closeAdd() { document.getElementById('add-overlay').classList.remove('open'); }
-function addTask() {
-  const desc = document.getElementById('f-desc').value.trim();
-  const module = document.getElementById('f-module').value;
-  if (!desc) { document.getElementById('f-desc').focus(); return; }
-  if (!module) { document.getElementById('f-module').focus(); return; }
-  tasks.unshift({ id:nextId(), desc, module,
-    role: document.getElementById('f-role').value,
-    type: document.getElementById('f-type').value,
-    priority: document.getElementById('f-priority').value,
-    status: 'Pending' });
-  save(); closeAdd(); renderAll();
+
+function startQuickAdd(){
+  quickAdding=true;
+  if(viewFilter!=='Pending') setView('Pending', document.querySelector('[data-view="Pending"]'));
+  else renderAll();
+}
+function handleQA(e){
+  if(e.key==='Enter'){
+    const v=e.target.value.trim();
+    if(!v) return;
+    tasks.unshift({id:nextId(),desc:v,module:'Other',role:'Shared (Global)',type:'Bug Fix',status:'Pending',priority:'Medium'});
+    save();
+    quickAdding=false;
+    renderAll();
+    // auto-open the new task
+    selectTask(tasks[0].id);
+  }
+  if(e.key==='Escape'){quickAdding=false;renderAll();}
+}
+
+function toggleDone(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  t.status=t.status==='DONE'?'Pending':'DONE';
+  save();
+  if(activeId===id){populateDetail(t);}
+  renderAll();
+}
+
+function selectTask(id){
+  activeId=id;
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  populateDetail(t);
+  document.getElementById('detail-panel').classList.add('open');
+  renderAll();
+}
+function closeDetail(){
+  activeId=null;
+  document.getElementById('detail-panel').classList.remove('open');
+  renderAll();
+}
+function populateDetail(t){
+  document.getElementById('d-id').textContent=`TASK-${String(t.id).padStart(3,'0')} · ${t.role}`;
+  document.getElementById('d-desc').value=t.desc;
+  ['status','priority','type','module','role'].forEach(k=>{
+    const el=document.getElementById('d-'+k);
+    if(el) el.value=t[k];
+  });
+}
+function patchActive(field,value){
+  if(activeId===null)return;
+  const t=tasks.find(x=>x.id===activeId);
+  if(!t)return;
+  t[field]=value;
+  save();
+  renderAll();
+}
+
+function setView(v,el){
+  viewFilter=v; prioFilter=null; moduleFilter=null; quickAdding=false;
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.sidebar-item[data-prio]').forEach(x=>x.classList.remove('active'));
+  renderAll();
+}
+function setPrio(p,el){
+  prioFilter=prioFilter===p?null:p;
+  document.querySelectorAll('.sidebar-item[data-prio]').forEach(x=>x.classList.toggle('active',x===el&&prioFilter===p));
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(x=>x.classList.remove('active'));
+  moduleFilter=null; viewFilter='all';
+  renderAll();
+}
+function setModule(m,el){
+  moduleFilter=moduleFilter===m?null:m;
+  prioFilter=null; viewFilter='all';
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(x=>x.classList.remove('active'));
+  renderAll();
 }
 
 // Delete
-function openDel(id) {
-  delId = id;
-  const t = tasks.find(x=>x.id===id);
-  document.getElementById('del-desc').textContent = t ? `"${t.desc.slice(0,90)}${t.desc.length>90?'…':''}"` : '';
+function openDel(id){
+  delId=id;
+  const t=tasks.find(x=>x.id===id);
+  document.getElementById('del-desc').textContent=t?`"${t.desc.slice(0,80)}${t.desc.length>80?'…':''}"`:'';
   document.getElementById('del-overlay').classList.add('open');
 }
-function closeDel() { document.getElementById('del-overlay').classList.remove('open'); delId=null; }
-function confirmDel() { if(delId===null) return; tasks=tasks.filter(t=>t.id!==delId); save(); closeDel(); renderAll(); }
-
-// Close on backdrop
-['add-overlay','del-overlay'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',e=>{ if(e.target===e.currentTarget) e.target.classList.remove('open'); });
+function closeDel(){document.getElementById('del-overlay').classList.remove('open');delId=null;}
+function confirmDel(){
+  if(delId===null)return;
+  if(activeId===delId)closeDetail();
+  tasks=tasks.filter(t=>t.id!==delId);
+  save();closeDel();renderAll();
+}
+document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeDel();if(!quickAdding)closeDetail();}
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search').focus();}
 });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeAdd(); closeDel(); } });
 
 renderAll();
 </script>
