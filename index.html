@@ -6,794 +6,836 @@
 <title>Hirush — Task Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0d0d10;
-  --s1:#111115;
-  --s2:#16161b;
-  --s3:#1c1c23;
-  --s4:#22222b;
-  --bd:rgba(255,255,255,0.07);
-  --bd2:rgba(255,255,255,0.12);
-  --t1:#e8e8ee;
-  --t2:#8888a0;
-  --t3:#44445a;
-  --purple:#7c6df0;
-  --purple-bg:rgba(124,109,240,0.12);
-  --red:#f87171;
-  --red-bg:rgba(248,113,113,0.1);
-  --amber:#fb923c;
-  --amber-bg:rgba(251,146,60,0.1);
-  --green:#4ade80;
-  --green-bg:rgba(74,222,128,0.1);
-  --blue:#60a5fa;
-  --blue-bg:rgba(96,165,250,0.1);
-  --slate:#64748b;
-  --slate-bg:rgba(100,116,139,0.12);
-  --r:6px;
+  --bg:#f0f2f5;
+  --white:#ffffff;
+  --sidebar:#1e2a3a;
+  --sidebar-hover:#2d3f55;
+  --sidebar-active:#3b5270;
+  --topbar:#1e2a3a;
+  --bd:#e2e6ea;
+  --bd2:#c8cfd8;
+  --t1:#172b4d;
+  --t2:#5e6c84;
+  --t3:#97a0af;
+  --r:8px;
+  --rc:10px;
+  --shadow:0 1px 3px rgba(9,30,66,.12),0 0 0 1px rgba(9,30,66,.06);
+  --shadow-drag:0 8px 24px rgba(9,30,66,.2);
 }
 html,body{height:100%;overflow:hidden;}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);font-size:13px;display:flex;flex-direction:column;}
 
-/* ── TOP BAR ── */
-.topbar{
-  height:42px;min-height:42px;
-  display:flex;align-items:center;gap:0;
-  border-bottom:1px solid var(--bd);
-  background:var(--s1);
-  flex-shrink:0;
-}
-.topbar-brand{
-  width:220px;min-width:220px;
-  display:flex;align-items:center;gap:8px;
-  padding:0 16px;
-  border-right:1px solid var(--bd);
-  height:100%;
-  font-size:13px;font-weight:600;color:var(--t1);
-}
-.brand-icon{width:18px;height:18px;background:var(--purple);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.brand-icon svg{width:10px;height:10px;stroke:#fff;stroke-width:2.5;}
-.topbar-center{flex:1;display:flex;align-items:center;gap:8px;padding:0 16px;}
-.topbar-search{
-  display:flex;align-items:center;gap:6px;
-  background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);
-  padding:5px 10px;width:260px;
-}
-.topbar-search input{background:none;border:none;outline:none;font-family:inherit;font-size:12px;color:var(--t1);width:100%;}
-.topbar-search input::placeholder{color:var(--t3);}
-.topbar-search svg{width:13px;height:13px;stroke:var(--t3);flex-shrink:0;}
-.topbar-actions{display:flex;align-items:center;gap:6px;padding:0 14px;}
-.kbd{font-size:10px;background:var(--s3);border:1px solid var(--bd2);border-radius:4px;padding:2px 5px;color:var(--t3);font-family:monospace;}
+/* MODULE COLORS */
+.mc-messaging    {--mc:#0052cc;--mc-bg:#e6f0ff;--mc-light:#deebff;}
+.mc-profile      {--mc:#6554c0;--mc-bg:#f0ecff;--mc-light:#e6e0ff;}
+.mc-job          {--mc:#00875a;--mc-bg:#e3fcef;--mc-light:#d4f5e5;}
+.mc-scheduling   {--mc:#008da6;--mc-bg:#e0f7fa;--mc-light:#d0f2f7;}
+.mc-landing      {--mc:#e56910;--mc-bg:#fff3e0;--mc-light:#fdecd5;}
+.mc-earnings     {--mc:#b8860b;--mc-bg:#fff8e1;--mc-light:#fdf3c9;}
+.mc-creation     {--mc:#c0399f;--mc-bg:#fce4f5;--mc-light:#f9d5f0;}
+.mc-settings     {--mc:#344563;--mc-bg:#ebecf0;--mc-light:#dfe1e6;}
+.mc-contracts    {--mc:#bf2600;--mc-bg:#ffebe6;--mc-light:#ffd8d0;}
+.mc-legal        {--mc:#505f79;--mc-bg:#f4f5f7;--mc-light:#e8ebf0;}
+.mc-application  {--mc:#0065ff;--mc-bg:#e6f0ff;--mc-light:#cce0ff;}
+.mc-payment      {--mc:#006644;--mc-bg:#e3fcef;--mc-light:#abf5d1;}
+.mc-signup       {--mc:#6554c0;--mc-bg:#f0ecff;--mc-light:#dcd5ff;}
+.mc-notification {--mc:#ff8b00;--mc-bg:#fffae6;--mc-light:#fff0b3;}
+.mc-other        {--mc:#42526e;--mc-bg:#f4f5f7;--mc-light:#dfe1e6;}
 
-/* ── LAYOUT ── */
+/* TOPBAR */
+.topbar{
+  height:48px;min-height:48px;
+  display:flex;align-items:center;
+  background:var(--topbar);
+  padding:0 16px;gap:12px;
+  flex-shrink:0;z-index:10;
+}
+.brand{display:flex;align-items:center;gap:8px;margin-right:8px;}
+.brand-dot{width:28px;height:28px;background:#0052cc;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-dot svg{width:14px;height:14px;stroke:#fff;stroke-width:2.5;}
+.brand-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:-.01em;}
+.brand-name span{color:#8bafd4;font-weight:400;}
+.topbar-divider{width:1px;height:24px;background:rgba(255,255,255,.15);}
+.topbar-search{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r);padding:6px 12px;width:240px;
+  transition:all .15s;
+}
+.topbar-search:focus-within{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);}
+.topbar-search input{background:none;border:none;outline:none;font-family:inherit;font-size:12px;color:#fff;width:100%;}
+.topbar-search input::placeholder{color:rgba(255,255,255,.45);}
+.topbar-search svg{width:13px;height:13px;stroke:rgba(255,255,255,.5);flex-shrink:0;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.btn-add-top{
+  display:flex;align-items:center;gap:6px;
+  background:#0052cc;color:#fff;
+  border:none;border-radius:var(--r);
+  padding:7px 14px;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:background .12s;
+}
+.btn-add-top:hover{background:#0065ff;}
+.btn-add-top svg{width:13px;height:13px;stroke:#fff;stroke-width:2.5;}
+
+/* LAYOUT */
 .layout{display:flex;flex:1;overflow:hidden;}
 
-/* ── SIDEBAR ── */
+/* SIDEBAR */
 .sidebar{
   width:220px;min-width:220px;
-  background:var(--s1);
-  border-right:1px solid var(--bd);
+  background:var(--sidebar);
   display:flex;flex-direction:column;
-  overflow-y:auto;
-  flex-shrink:0;
+  overflow-y:auto;flex-shrink:0;
 }
-.sidebar-section{padding:16px 8px 8px;}
-.sidebar-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);padding:0 8px 6px;}
-.sidebar-item{
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-section{padding:20px 12px 8px;}
+.sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35);padding:0 8px 8px;}
+.sb-item{
   display:flex;align-items:center;justify-content:space-between;
-  padding:5px 10px;border-radius:var(--r);cursor:pointer;
-  font-size:12px;color:var(--t2);transition:all .1s;
-  user-select:none;
+  padding:6px 10px;border-radius:6px;cursor:pointer;
+  font-size:12px;font-weight:500;color:rgba(255,255,255,.7);
+  transition:all .12s;user-select:none;margin-bottom:2px;
 }
-.sidebar-item:hover{background:var(--s3);color:var(--t1);}
-.sidebar-item.active{background:var(--s3);color:var(--t1);font-weight:500;}
-.sidebar-item-left{display:flex;align-items:center;gap:7px;}
-.sidebar-item-left svg{width:13px;height:13px;stroke:currentColor;flex-shrink:0;}
-.s-count{font-size:10px;color:var(--t3);background:var(--s4);border-radius:3px;padding:1px 5px;min-width:18px;text-align:center;}
-.sidebar-item.active .s-count{color:var(--t2);}
-.sidebar-divider{height:1px;background:var(--bd);margin:4px 8px;}
+.sb-item:hover{background:var(--sidebar-hover);color:#fff;}
+.sb-item.active{background:var(--sidebar-active);color:#fff;}
+.sb-item-left{display:flex;align-items:center;gap:8px;overflow:hidden;}
+.sb-item-left svg{width:13px;height:13px;stroke:currentColor;flex-shrink:0;}
+.sb-item-label{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.sb-count{
+  font-size:10px;font-weight:600;
+  background:rgba(255,255,255,.12);
+  color:rgba(255,255,255,.6);
+  border-radius:10px;padding:1px 7px;
+  min-width:20px;text-align:center;flex-shrink:0;
+}
+.sb-item.active .sb-count{background:rgba(255,255,255,.2);color:#fff;}
+.sb-dot-m{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.sb-divider{height:1px;background:rgba(255,255,255,.08);margin:8px 12px;}
 
-/* ── MAIN AREA ── */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
-
-.view-header{
-  height:42px;min-height:42px;
+/* BOARD AREA */
+.board-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.board-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 18px;
-  border-bottom:1px solid var(--bd);
-  background:var(--s1);
-  flex-shrink:0;
+  padding:14px 20px 10px;flex-shrink:0;
 }
-.view-title{font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:8px;}
-.view-count{font-size:11px;color:var(--t3);font-weight:400;}
-.view-controls{display:flex;align-items:center;gap:6px;}
-
-.btn{
-  display:flex;align-items:center;gap:5px;
-  padding:5px 10px;border-radius:var(--r);
-  border:1px solid var(--bd2);background:transparent;
-  font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit;
-  transition:all .1s;white-space:nowrap;
+.board-title{font-size:14px;font-weight:700;color:var(--t1);}
+.active-filter{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--t2);
 }
-.btn:hover{background:var(--s3);color:var(--t1);}
-.btn svg{width:13px;height:13px;stroke:currentColor;}
-.btn-primary{background:var(--purple);color:#fff;border-color:var(--purple);}
-.btn-primary:hover{background:#6a5dd8;border-color:#6a5dd8;color:#fff;}
-
-/* ── TASK LIST ── */
-.task-list{flex:1;overflow-y:auto;}
-.task-list::-webkit-scrollbar{width:4px;}
-.task-list::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
-
-.group-header{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 18px;
-  background:var(--s1);
-  border-bottom:1px solid var(--bd);
-  position:sticky;top:0;z-index:2;
-  cursor:pointer;user-select:none;
+.filter-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:#fff;border:1px solid var(--bd);
+  border-radius:20px;padding:3px 10px;
+  font-size:11px;font-weight:500;color:var(--t2);
+  cursor:pointer;transition:all .12s;
 }
-.group-header-name{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
-.group-header-count{font-size:10px;color:var(--t3);}
-.group-toggle{width:14px;height:14px;stroke:var(--t3);}
+.filter-chip:hover{border-color:var(--bd2);color:var(--t1);}
+.filter-chip .x{color:var(--t3);font-size:14px;line-height:1;margin-left:2px;}
 
-.task-row{
-  display:grid;
-  grid-template-columns:20px 22px 1fr 140px 90px 80px 28px;
-  align-items:center;gap:0;
-  padding:0 18px;
-  height:36px;
-  border-bottom:1px solid var(--bd);
-  cursor:pointer;
-  transition:background .08s;
+/* BOARD COLUMNS */
+.board-columns{display:flex;gap:14px;padding:0 20px 20px;flex:1;overflow-x:auto;overflow-y:hidden;align-items:flex-start;}
+.board-columns::-webkit-scrollbar{height:6px;}
+.board-columns::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
+
+.column{
+  width:280px;min-width:280px;
+  display:flex;flex-direction:column;
+  max-height:100%;
 }
-.task-row:hover{background:var(--s2);}
-.task-row.selected{background:var(--s3);}
-
-.task-checkbox{
-  width:14px;height:14px;border-radius:3px;
-  border:1px solid var(--t3);background:transparent;
-  cursor:pointer;flex-shrink:0;transition:all .1s;display:flex;align-items:center;justify-content:center;
+.col-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;margin-bottom:8px;
+  border-radius:var(--r);
 }
-.task-checkbox.done{background:var(--green);border-color:var(--green);}
-.task-checkbox.done svg{display:block;}
-.task-checkbox svg{display:none;width:9px;height:9px;stroke:#000;stroke-width:3;}
-.task-checkbox:hover:not(.done){border-color:var(--t2);}
-
-.prio-icon{display:flex;align-items:center;justify-content:center;padding:0 4px;}
-.prio-icon svg{width:12px;height:12px;flex-shrink:0;}
-
-.task-desc{
-  font-size:12px;color:var(--t1);
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  padding:0 8px;
-}
-.task-desc.done-text{color:var(--t3);text-decoration:line-through;}
-
-.task-module{
-  font-size:11px;color:var(--t3);
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  padding:0 4px;
-}
-.task-type{padding:0 4px;}
-.type-pill{
-  font-size:10px;color:var(--t3);
-  background:var(--s3);border:1px solid var(--bd);
-  border-radius:3px;padding:1px 6px;
-  display:inline-block;max-width:80px;
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-}
-.task-prio-badge{padding:0 4px;}
-.p-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;}
-.p-high{color:var(--red);background:var(--red-bg);}
-.p-medium{color:var(--amber);background:var(--amber-bg);}
-.p-low{color:var(--slate);background:var(--slate-bg);}
-
-.task-del{
+.col-header.pending {background:#fff8e1;}
+.col-header.inprog  {background:#e6f0ff;}
+.col-header.done    {background:#e3fcef;}
+.col-title{font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px;}
+.col-title.pending{color:#7a5f00;}
+.col-title.inprog {color:#0052cc;}
+.col-title.done   {color:#006644;}
+.col-count{
+  font-size:10px;font-weight:700;
+  width:20px;height:20px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  opacity:0;
+}
+.col-count.pending{background:#ffab00;color:#fff;}
+.col-count.inprog {background:#0052cc;color:#fff;}
+.col-count.done   {background:#36b37e;color:#fff;}
+.col-body{
+  flex:1;overflow-y:auto;
+  padding-bottom:8px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.col-body::-webkit-scrollbar{width:3px;}
+.col-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
+
+/* TASK CARD */
+.task-card{
+  background:var(--white);
+  border-radius:var(--rc);
+  box-shadow:var(--shadow);
+  padding:10px 12px 10px;
+  cursor:pointer;
+  transition:box-shadow .15s,transform .15s;
+  position:relative;
+  border-left:3px solid var(--mc,#ddd);
+}
+.task-card:hover{box-shadow:0 4px 12px rgba(9,30,66,.18);transform:translateY(-1px);}
+.task-card.dragging{opacity:.4;transform:rotate(1deg);}
+.task-card.drag-over{box-shadow:0 0 0 2px #0052cc;}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;}
+.card-module-badge{
+  font-size:10px;font-weight:600;
+  background:var(--mc-bg,#f4f5f7);color:var(--mc,#42526e);
+  padding:2px 7px;border-radius:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;
+}
+.card-prio{display:flex;align-items:center;gap:3px;flex-shrink:0;}
+.prio-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.prio-dot.high{background:#de350b;}
+.prio-dot.medium{background:#ff8b00;}
+.prio-dot.low{background:#97a0af;}
+.card-desc{
+  font-size:12px;font-weight:500;color:var(--t1);
+  line-height:1.5;margin-bottom:8px;
+}
+.card-desc.done-text{color:var(--t3);text-decoration:line-through;}
+.card-footer{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.card-type{
+  font-size:10px;color:var(--mc,#42526e);
+  background:var(--mc-light,#f4f5f7);
+  padding:2px 7px;border-radius:4px;font-weight:500;
+}
+.card-role{font-size:10px;color:var(--t3);}
+.card-del{
   background:none;border:none;cursor:pointer;
-  color:var(--t3);border-radius:4px;padding:3px;
-  transition:all .1s;
+  color:var(--t3);padding:2px;border-radius:4px;
+  opacity:0;transition:all .1s;line-height:0;
 }
-.task-row:hover .task-del{opacity:1;}
-.task-del:hover{background:var(--red-bg);color:var(--red);}
-.task-del svg{width:13px;height:13px;stroke:currentColor;}
+.task-card:hover .card-del{opacity:1;}
+.card-del:hover{background:#ffebe6;color:#de350b;}
+.card-del svg{width:13px;height:13px;stroke:currentColor;}
 
-.empty-group{padding:14px 18px;font-size:12px;color:var(--t3);}
-
-/* ── STATUS BAR ── */
-.statusbar{
-  height:26px;min-height:26px;
-  display:flex;align-items:center;gap:16px;
-  padding:0 18px;
-  border-top:1px solid var(--bd);
-  background:var(--s1);
-  flex-shrink:0;
+/* QUICK ADD CARD */
+.quick-add-card{
+  background:var(--white);border-radius:var(--rc);
+  box-shadow:var(--shadow);padding:10px 12px;
+  border:2px dashed #0052cc;
 }
-.sb-item{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:5px;}
-.sb-dot{width:6px;height:6px;border-radius:50%;}
+.quick-add-card textarea{
+  width:100%;background:none;border:none;outline:none;
+  font-family:inherit;font-size:12px;color:var(--t1);
+  resize:none;line-height:1.5;min-height:52px;
+}
+.quick-add-card textarea::placeholder{color:var(--t3);}
+.quick-add-actions{display:flex;gap:6px;margin-top:8px;}
+.btn-sm{
+  padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;
+  cursor:pointer;font-family:inherit;border:none;
+}
+.btn-sm.primary{background:#0052cc;color:#fff;}
+.btn-sm.primary:hover{background:#0065ff;}
+.btn-sm.ghost{background:transparent;color:var(--t2);border:1px solid var(--bd);}
+.btn-sm.ghost:hover{background:var(--bg);}
 
-/* ── DETAIL PANEL ── */
+/* ADD ANOTHER */
+.add-another{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 10px;border-radius:var(--r);
+  cursor:pointer;color:var(--t2);font-size:12px;font-weight:500;
+  transition:all .12s;user-select:none;
+}
+.add-another:hover{background:rgba(9,30,66,.06);color:var(--t1);}
+.add-another svg{width:14px;height:14px;stroke:currentColor;}
+
+.empty-col{
+  text-align:center;padding:24px 12px;
+  color:var(--t3);font-size:11px;
+  border:2px dashed var(--bd);border-radius:var(--rc);
+}
+
+/* DETAIL PANEL */
 .detail{
-  width:0;min-width:0;
-  background:var(--s1);
+  width:0;min-width:0;background:var(--white);
   border-left:1px solid var(--bd);
-  overflow:hidden;
-  transition:width .18s ease;
-  flex-shrink:0;
-  display:flex;flex-direction:column;
+  overflow:hidden;transition:width .18s ease;
+  flex-shrink:0;display:flex;flex-direction:column;
 }
-.detail.open{width:360px;min-width:360px;}
-.detail-inner{width:360px;display:flex;flex-direction:column;height:100%;overflow:hidden;}
-.detail-header{
+.detail.open{width:340px;min-width:340px;}
+.detail-inner{width:340px;display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.detail-hd{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 16px;
-  border-bottom:1px solid var(--bd);
-  flex-shrink:0;
+  padding:14px 16px;border-bottom:1px solid var(--bd);flex-shrink:0;
 }
-.detail-header-title{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
-.detail-close{background:none;border:none;cursor:pointer;color:var(--t3);padding:3px;border-radius:4px;display:flex;}
-.detail-close:hover{background:var(--s3);color:var(--t1);}
-.detail-close svg{width:14px;height:14px;stroke:currentColor;}
+.detail-hd-title{font-size:12px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:.06em;}
+.detail-close{background:none;border:none;cursor:pointer;color:var(--t3);padding:4px;border-radius:4px;display:flex;transition:all .1s;}
+.detail-close:hover{background:var(--bg);color:var(--t1);}
+.detail-close svg{width:15px;height:15px;stroke:currentColor;}
 .detail-body{flex:1;overflow-y:auto;padding:16px;}
 .detail-body::-webkit-scrollbar{width:4px;}
-.detail-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
-
-.detail-desc{
-  font-size:13px;color:var(--t1);line-height:1.65;
+.detail-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.d-field{margin-bottom:14px;}
+.d-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:5px;}
+.d-textarea{
+  width:100%;background:transparent;
   border:1px solid transparent;border-radius:var(--r);
-  padding:6px 8px;margin:-6px -8px 16px;
-  cursor:text;outline:none;
-  transition:border-color .1s;min-height:60px;resize:none;
-  background:transparent;font-family:inherit;width:100%;
-}
-.detail-desc:focus,.detail-desc:hover{border-color:var(--bd2);background:var(--s2);}
-
-.detail-field{margin-bottom:12px;}
-.detail-field-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:5px;}
-.detail-field select,.detail-field input{
-  width:100%;background:var(--s2);border:1px solid var(--bd2);
-  border-radius:var(--r);padding:6px 9px;font-size:12px;
+  padding:7px 9px;font-size:13px;font-weight:500;
   font-family:inherit;color:var(--t1);outline:none;
-  transition:border-color .12s;
+  resize:none;min-height:80px;line-height:1.6;
+  transition:border-color .12s,background .12s;
 }
-.detail-field select option{background:var(--s2);color:var(--t1);}
-.detail-field select:focus,.detail-field input:focus{border-color:var(--purple);}
-.detail-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.detail-id{font-size:10px;color:var(--t3);font-family:monospace;margin-bottom:16px;}
-.detail-actions{padding:12px 16px;border-top:1px solid var(--bd);flex-shrink:0;display:flex;gap:8px;}
+.d-textarea:hover,.d-textarea:focus{border-color:var(--bd2);background:var(--bg);}
+.d-select{
+  width:100%;background:var(--white);
+  border:1px solid var(--bd);border-radius:var(--r);
+  padding:7px 10px;font-size:12px;
+  font-family:inherit;color:var(--t1);outline:none;
+  transition:border-color .12s;cursor:pointer;
+}
+.d-select:focus{border-color:#0052cc;}
+.d-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.d-meta{font-size:10px;color:var(--t3);margin-bottom:16px;font-family:monospace;}
+.detail-foot{padding:12px 16px;border-top:1px solid var(--bd);flex-shrink:0;}
+.btn-del-full{
+  width:100%;padding:8px;border-radius:var(--r);
+  border:1px solid #ffbdad;background:#fff4f2;
+  color:#de350b;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .12s;
+}
+.btn-del-full:hover{background:#ffebe6;border-color:#de350b;}
+.btn-del-full svg{width:13px;height:13px;stroke:currentColor;}
 
-/* ── QUICK ADD ROW ── */
-.quick-add-row{
-  display:grid;
-  grid-template-columns:20px 22px 1fr 140px 90px 80px 28px;
-  align-items:center;
-  padding:0 18px;height:36px;
-  border-bottom:1px solid var(--bd);
-  background:var(--s2);
+/* STATUS BAR */
+.statusbar{
+  display:flex;align-items:center;gap:14px;
+  padding:7px 20px;border-top:1px solid var(--bd);
+  background:var(--white);flex-shrink:0;font-size:11px;color:var(--t3);
 }
-.quick-add-input{
-  background:none;border:none;outline:none;
-  font-family:inherit;font-size:12px;color:var(--t1);
-  padding:0 8px;width:100%;
-}
-.quick-add-input::placeholder{color:var(--t3);}
+.sb-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;}
 
-/* ── CONFIRM DIALOG ── */
-.overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);
-  display:flex;align-items:center;justify-content:center;
-  z-index:300;opacity:0;pointer-events:none;transition:opacity .15s;
-}
+/* CONFIRM */
+.overlay{position:fixed;inset:0;background:rgba(9,30,66,.5);display:flex;align-items:center;justify-content:center;z-index:300;opacity:0;pointer-events:none;transition:opacity .15s;}
 .overlay.open{opacity:1;pointer-events:all;}
-.dialog{
-  background:var(--s2);border:1px solid var(--bd2);
-  border-radius:10px;padding:20px;width:340px;
-  transform:scale(.96);transition:transform .15s;
-}
+.dialog{background:var(--white);border-radius:12px;padding:24px;width:360px;box-shadow:0 12px 40px rgba(9,30,66,.25);transform:scale(.96);transition:transform .15s;}
 .overlay.open .dialog{transform:scale(1);}
-.dialog h3{font-size:14px;font-weight:600;margin-bottom:8px;}
-.dialog p{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:16px;}
+.dialog h3{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--t1);}
+.dialog p{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:20px;}
 .dialog-actions{display:flex;gap:8px;justify-content:flex-end;}
-.btn-del{background:#7f1d1d;color:var(--red);border:none;border-radius:var(--r);padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;}
-.btn-del:hover{background:#991b1b;}
+.btn-cancel{padding:7px 16px;border-radius:var(--r);border:1px solid var(--bd);background:transparent;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;}
+.btn-cancel:hover{background:var(--bg);}
+.btn-confirm-del{padding:7px 16px;border-radius:var(--r);background:#de350b;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-confirm-del:hover{background:#bf2600;}
+
+/* Loading */
+.loading{display:flex;align-items:center;justify-content:center;flex:1;color:var(--t3);font-size:13px;gap:10px;}
+.spin{width:18px;height:18px;border:2px solid var(--bd);border-top-color:#0052cc;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
+<!-- TOPBAR -->
 <div class="topbar">
-  <div class="topbar-brand">
-    <div class="brand-icon">
+  <div class="brand">
+    <div class="brand-dot">
       <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
-    Hirush Tasks
+    <span class="brand-name">Hirush <span>/ Tasks</span></span>
   </div>
-  <div class="topbar-center">
-    <div class="topbar-search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="global-search" placeholder="Search tasks…" oninput="renderAll()"/>
-    </div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="global-search" placeholder="Search tasks…" oninput="renderBoard()"/>
   </div>
-  <div class="topbar-actions">
-    <span class="kbd">⌘K</span>
+  <div class="topbar-right">
+    <button class="btn-add-top" onclick="openQuickAdd('Pending')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add task
+    </button>
   </div>
 </div>
 
-<!-- LAYOUT -->
 <div class="layout">
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Views</div>
-      <div class="sidebar-item active" data-view="all" onclick="setView('all',this)">
-        <div class="sidebar-item-left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          All tasks
-        </div>
-        <span class="s-count" id="sv-all">0</span>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">Views</div>
+    <div class="sb-item active" data-view="all" onclick="setView('all',this)">
+      <div class="sb-item-left">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="sb-item-label">All tasks</span>
       </div>
-      <div class="sidebar-item" data-view="Pending" onclick="setView('Pending',this)">
-        <div class="sidebar-item-left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Pending
-        </div>
-        <span class="s-count" id="sv-pending">0</span>
-      </div>
-      <div class="sidebar-item" data-view="In Progress" onclick="setView('In Progress',this)">
-        <div class="sidebar-item-left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-7.89"/></svg>
-          In progress
-        </div>
-        <span class="s-count" id="sv-inprog">0</span>
-      </div>
-      <div class="sidebar-item" data-view="DONE" onclick="setView('DONE',this)">
-        <div class="sidebar-item-left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Done
-        </div>
-        <span class="s-count" id="sv-done">0</span>
-      </div>
+      <span class="sb-count" id="sv-all">–</span>
     </div>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Priority</div>
-      <div class="sidebar-item" data-prio="High" onclick="setPrio('High',this)">
-        <div class="sidebar-item-left">
-          <svg viewBox="0 0 24 24" fill="var(--red)" stroke="none"><path d="M12 2L2 19h20L12 2z"/></svg>
-          High
-        </div>
-        <span class="s-count" id="sp-high">0</span>
+    <div class="sb-item" data-view="High" onclick="setView('High',this)">
+      <div class="sb-item-left">
+        <svg viewBox="0 0 24 24" fill="#de350b" stroke="none"><path d="M12 2L2 19h20L12 2z"/></svg>
+        <span class="sb-item-label">High priority</span>
       </div>
-      <div class="sidebar-item" data-prio="Medium" onclick="setPrio('Medium',this)">
-        <div class="sidebar-item-left">
-          <svg viewBox="0 0 24 24" fill="var(--amber)" stroke="none"><rect x="3" y="10" width="18" height="4" rx="2"/></svg>
-          Medium
-        </div>
-        <span class="s-count" id="sp-med">0</span>
-      </div>
-      <div class="sidebar-item" data-prio="Low" onclick="setPrio('Low',this)">
-        <div class="sidebar-item-left">
-          <svg viewBox="0 0 24 24" fill="var(--slate)" stroke="none"><path d="M12 22L2 5h20L12 22z"/></svg>
-          Low
-        </div>
-        <span class="s-count" id="sp-low">0</span>
-      </div>
+      <span class="sb-count" id="sv-high">–</span>
     </div>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Modules</div>
-      <div id="module-sidebar"></div>
+    <div class="sb-item" data-view="Medium" onclick="setView('Medium',this)">
+      <div class="sb-item-left">
+        <svg viewBox="0 0 24 24" fill="#ff8b00" stroke="none"><rect x="3" y="10" width="18" height="4" rx="2"/></svg>
+        <span class="sb-item-label">Medium priority</span>
+      </div>
+      <span class="sb-count" id="sv-med">–</span>
+    </div>
+    <div class="sb-item" data-view="Low" onclick="setView('Low',this)">
+      <div class="sb-item-left">
+        <svg viewBox="0 0 24 24" fill="#97a0af" stroke="none"><path d="M12 22L2 5h20L12 22z"/></svg>
+        <span class="sb-item-label">Low priority</span>
+      </div>
+      <span class="sb-count" id="sv-low">–</span>
     </div>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
-    <div class="view-header">
-      <div class="view-title" id="view-title">All tasks <span class="view-count" id="view-count"></span></div>
-      <div class="view-controls">
-        <button class="btn btn-primary" onclick="startQuickAdd()">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New task
-        </button>
-      </div>
-    </div>
+  <div class="sb-divider"></div>
 
-    <div class="task-list" id="task-list"></div>
+  <div class="sb-section">
+    <div class="sb-label">Modules</div>
+    <div id="module-list"></div>
+  </div>
+</div>
 
-    <div class="statusbar">
-      <div class="sb-item"><span class="sb-dot" style="background:var(--amber)"></span><span id="sb-pending">0 pending</span></div>
-      <div class="sb-item"><span class="sb-dot" style="background:var(--blue)"></span><span id="sb-inprog">0 in progress</span></div>
-      <div class="sb-item"><span class="sb-dot" style="background:var(--green)"></span><span id="sb-done">0 done</span></div>
-      <div class="sb-item" style="margin-left:auto;"><span id="sb-total" style="color:var(--t3)"></span></div>
-    </div>
+<!-- BOARD -->
+<div class="board-area">
+  <div class="board-header">
+    <div class="board-title" id="board-title">All tasks</div>
+    <div id="active-filter-chips"></div>
   </div>
 
-  <!-- DETAIL PANEL -->
-  <div class="detail" id="detail-panel">
-    <div class="detail-inner">
-      <div class="detail-header">
-        <span class="detail-header-title">Task detail</span>
-        <button class="detail-close" onclick="closeDetail()" aria-label="Close">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+  <div class="board-columns" id="board-columns">
+    <div class="loading"><div class="spin"></div> Loading tasks…</div>
+  </div>
+
+  <div class="statusbar">
+    <span><span class="sb-dot" style="background:#ffab00"></span><span id="sb-p">0</span> pending</span>
+    <span><span class="sb-dot" style="background:#0052cc"></span><span id="sb-i">0</span> in progress</span>
+    <span><span class="sb-dot" style="background:#36b37e"></span><span id="sb-d">0</span> done</span>
+    <span style="margin-left:auto;" id="sb-total"></span>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail" id="detail-panel">
+  <div class="detail-inner">
+    <div class="detail-hd">
+      <span class="detail-hd-title">Edit task</span>
+      <button class="detail-close" onclick="closeDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="detail-body">
+      <div class="d-meta" id="d-meta"></div>
+      <div class="d-field">
+        <div class="d-label">Description</div>
+        <textarea class="d-textarea" id="d-desc" rows="4" oninput="patchActive('desc',this.value)" placeholder="Task description…"></textarea>
       </div>
-      <div class="detail-body">
-        <div class="detail-id" id="d-id"></div>
-        <textarea class="detail-desc" id="d-desc" rows="4" oninput="patchActive('desc',this.value)" placeholder="Task description…"></textarea>
-        <div class="detail-field">
-          <div class="detail-field-label">Status</div>
-          <select id="d-status" onchange="patchActive('status',this.value)">
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="DONE">Done</option>
+      <div class="d-field">
+        <div class="d-label">Status</div>
+        <select class="d-select" id="d-status" onchange="patchActive('status',this.value)">
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="DONE">Done</option>
+        </select>
+      </div>
+      <div class="d-row">
+        <div class="d-field">
+          <div class="d-label">Priority</div>
+          <select class="d-select" id="d-priority" onchange="patchActive('priority',this.value)">
+            <option>High</option><option>Medium</option><option>Low</option>
           </select>
         </div>
-        <div class="detail-field-row">
-          <div class="detail-field">
-            <div class="detail-field-label">Priority</div>
-            <select id="d-priority" onchange="patchActive('priority',this.value)">
-              <option>High</option><option>Medium</option><option>Low</option>
-            </select>
-          </div>
-          <div class="detail-field">
-            <div class="detail-field-label">Type</div>
-            <select id="d-type" onchange="patchActive('type',this.value)">
-              <option>Bug Fix</option><option>Feature</option><option>UI Improvement</option>
-              <option>Optimization</option><option>Integration</option><option>Policy / Logic</option>
-              <option>QA / Testing</option><option>Cleanup</option><option>Other</option>
-            </select>
-          </div>
-        </div>
-        <div class="detail-field">
-          <div class="detail-field-label">Module</div>
-          <select id="d-module" onchange="patchActive('module',this.value)">
-            <option>Payment Gateway</option><option>Profile Creation</option>
-            <option>Profile Page</option><option>Account Settings</option>
-            <option>Job Feed / Search</option><option>Get Paid / Earnings</option>
-            <option>Contracts &amp; Tracking</option><option>Scheduling System</option>
-            <option>Messaging System</option><option>Landing Page</option>
-            <option>Legal Pages</option><option>Application Page</option>
-            <option>Signup Page</option><option>Notification System</option><option>Other</option>
-          </select>
-        </div>
-        <div class="detail-field">
-          <div class="detail-field-label">User role</div>
-          <select id="d-role" onchange="patchActive('role',this.value)">
-            <option>Shared (Global)</option><option>Freelancer</option>
-            <option>Client</option><option>Client / Visitor</option>
+        <div class="d-field">
+          <div class="d-label">Type</div>
+          <select class="d-select" id="d-type" onchange="patchActive('type',this.value)">
+            <option>Bug Fix</option><option>Feature</option><option>UI Improvement</option>
+            <option>Optimization</option><option>Integration</option><option>Policy / Logic</option>
+            <option>QA / Testing</option><option>Cleanup</option><option>Other</option>
           </select>
         </div>
       </div>
-      <div class="detail-actions">
-        <button class="btn" style="color:var(--red);border-color:var(--red-bg);background:var(--red-bg);" onclick="openDel(activeId)">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-          Delete task
-        </button>
+      <div class="d-field">
+        <div class="d-label">Module</div>
+        <select class="d-select" id="d-module" onchange="patchActive('module',this.value)">
+          <option>Payment Gateway</option><option>Profile Creation</option><option>Profile Page</option>
+          <option>Account Settings</option><option>Job Feed / Search</option><option>Get Paid / Earnings</option>
+          <option>Contracts &amp; Tracking</option><option>Scheduling System</option><option>Messaging System</option>
+          <option>Landing Page</option><option>Legal Pages</option><option>Application Page</option>
+          <option>Signup Page</option><option>Notification System</option><option>Other</option>
+        </select>
+      </div>
+      <div class="d-field">
+        <div class="d-label">User role</div>
+        <select class="d-select" id="d-role" onchange="patchActive('role',this.value)">
+          <option>Shared (Global)</option><option>Freelancer</option>
+          <option>Client</option><option>Client / Visitor</option>
+        </select>
       </div>
     </div>
+    <div class="detail-foot">
+      <button class="btn-del-full" onclick="openDel(activeId)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        Delete task
+      </button>
+    </div>
   </div>
+</div>
 
 </div><!-- /layout -->
 
 <!-- Delete confirm -->
 <div class="overlay" id="del-overlay">
   <div class="dialog">
-    <h3>Delete task?</h3>
-    <p id="del-desc"></p>
+    <h3>Delete this task?</h3>
+    <p id="del-desc">This action cannot be undone.</p>
     <div class="dialog-actions">
-      <button class="btn" onclick="closeDel()">Cancel</button>
-      <button class="btn-del" onclick="confirmDel()">Delete</button>
+      <button class="btn-cancel" onclick="closeDel()">Cancel</button>
+      <button class="btn-confirm-del" onclick="confirmDel()">Delete task</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── Firebase init ──
+// ── Firebase ──
 firebase.initializeApp({
-  apiKey: "AIzaSyCMWcrF5bmO394emni0U0J_q4s1P0Qbsrw",
-  authDomain: "hirush-task.firebaseapp.com",
-  projectId: "hirush-task",
-  storageBucket: "hirush-task.firebasestorage.app",
-  messagingSenderId: "268911377416",
-  appId: "1:268911377416:web:724a71185832e6c4d625bd"
+  apiKey:"AIzaSyCMWcrF5bmO394emni0U0J_q4s1P0Qbsrw",
+  authDomain:"hirush-task.firebaseapp.com",
+  projectId:"hirush-task",
+  storageBucket:"hirush-task.firebasestorage.app",
+  messagingSenderId:"268911377416",
+  appId:"1:268911377416:web:724a71185832e6c4d625bd"
 });
-const db = firebase.firestore();
-const COL = db.collection('tasks');
+const db=firebase.firestore();
+const COL=db.collection('tasks');
 
 const SEED=[
-  {id:1,desc:"Implement GCash Top-Up flow for buying HiRush Points.",module:"Payment Gateway",role:"Client",type:"Integration",status:"Pending",priority:"High"},
-  {id:2,desc:"The error message on the client profile creation page is not aligned with the Figma design.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"Medium"},
-  {id:3,desc:"Unable to access the client dashboard due to a pending phone number verification step.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"High"},
-  {id:4,desc:"Develop calendar booking system allowing clients to view slots and book calls.",module:"Scheduling System",role:"Client",type:"Feature",status:"Pending",priority:"High"},
-  {id:5,desc:"Move the Curation Search Bar to the top hero section.",module:"Landing Page",role:"Client / Visitor",type:"UI Improvement",status:"DONE",priority:"Medium"},
-  {id:6,desc:"Center-align the bottom banner title: 'Find Your Rushstar Now'.",module:"Landing Page",role:"Client / Visitor",type:"UI Improvement",status:"DONE",priority:"Low"},
-  {id:7,desc:"Fix Timezone dropdown no placeholder.",module:"Create Profile Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High"},
-  {id:8,desc:"Fix profile-age layout alignment.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High"},
-  {id:9,desc:"New Profile Displays Old Inputs in create profile.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High"},
-  {id:10,desc:"Reset profile picture to placeholder on new account creation if no image returns from API.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium"},
-  {id:11,desc:"Implement Certifications and Insights sections.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"High"},
-  {id:12,desc:"Fix '3 dots' menu and 'Contact Me' actions (currently non-functional).",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High"},
-  {id:13,desc:"Implement/fix professional title display and editing.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium"},
-  {id:14,desc:"Fix Tax Information section (saving and editing changes is broken).",module:"Account Settings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High"},
-  {id:15,desc:"Configure Billing & Payments infrastructure.",module:"Account Settings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High"},
-  {id:16,desc:"Fix job sorting filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High"},
-  {id:17,desc:"Fix Job Type and Number of Proposals filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High"},
-  {id:18,desc:"Fix Job Category filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High"},
-  {id:19,desc:"Activate main Search Bar for jobs.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium"},
-  {id:20,desc:"Fix action buttons on cards (Share, 3-dots dropdown, and Report features).",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High"},
-  {id:21,desc:"Implement earning snapshot breakdown and Tax Information calculations.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High"},
-  {id:22,desc:"Fix Payment Setting configuration and 'Get Paid' release triggers.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High"},
-  {id:23,desc:"Fix Earning Snapshot date adjustments and calendar viewing filters.",module:"Get Paid / Earnings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium"},
-  {id:24,desc:"Fix Active Contracts tracking and Work Diary sync features.",module:"Contracts & Tracking",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High"},
-  {id:25,desc:"Build an interactive Availability Calendar interface.",module:"Scheduling System",role:"Freelancer",type:"Feature",status:"Pending",priority:"High"},
-  {id:26,desc:"Enforce platform-wide minimum contract rate of $15.",module:"Contracts & Tracking",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High"},
-  {id:27,desc:"Create and publish Terms & Conditions page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium"},
-  {id:28,desc:"Create and publish Privacy Policy page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium"},
-  {id:29,desc:"Build Team Messaging (Group Channels) functionality.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High"},
-  {id:30,desc:"Integrate Voice Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High"},
-  {id:31,desc:"Integrate Video Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High"},
-  {id:32,desc:"Add native Emoji Support picker in chat box.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium"},
-  {id:33,desc:"Replace the current Camera Icon with a Gallery Media Pick Icon.",module:"Messaging System",role:"Shared (Global)",type:"UI Improvement",status:"Pending",priority:"Medium"},
-  {id:34,desc:"Optimize image upload pipeline to fix slow transfer speeds.",module:"Messaging System",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High"},
-  {id:35,desc:"Make sent images expandable (lightbox view) when clicked.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium"},
-  {id:36,desc:"Add a local download action button when viewing images.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium"},
-  {id:37,desc:"Conduct comprehensive QA testing for MP4 file sharing compatibility.",module:"Messaging System",role:"Shared (Global)",type:"QA / Testing",status:"Pending",priority:"High"},
-  {id:38,desc:"Completely remove or deprecate the legacy 'Meeting' feature block.",module:"Scheduling System",role:"Shared (Global)",type:"Cleanup",status:"Pending",priority:"Medium"},
-  {id:39,desc:"Pricing Page (per Figma design).",module:"Landing Page",role:"Shared (Global)",type:"Feature",status:"DONE",priority:"Medium"},
-  {id:40,desc:"Make a working Application page based on Figma design.",module:"Application Page",role:"Freelancer",type:"Feature",status:"DONE",priority:"High"},
-  {id:41,desc:"Terms and Conditions / Privacy Policy not yet linked on signup page.",module:"Signup Page",role:"Shared (Global)",type:"Bug Fix",status:"In Progress",priority:"Medium"},
-  {id:42,desc:"Clear All buttons not yet working on Application page.",module:"Application Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"Medium"},
-  {id:43,desc:"Changes in Application should appear in notification bell.",module:"Notification System",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium"},
+  {desc:"Implement GCash Top-Up flow for buying HiRush Points.",module:"Payment Gateway",role:"Client",type:"Integration",status:"Pending",priority:"High",order:0},
+  {desc:"Error message on client profile creation not aligned with Figma.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"Medium",order:1},
+  {desc:"Client dashboard blocked by pending phone number verification.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"High",order:2},
+  {desc:"Calendar booking system for clients to view slots and book calls.",module:"Scheduling System",role:"Client",type:"Feature",status:"Pending",priority:"High",order:3},
+  {desc:"Move the Curation Search Bar to the top hero section.",module:"Landing Page",role:"Client / Visitor",type:"UI Improvement",status:"DONE",priority:"Medium",order:4},
+  {desc:"Center-align the bottom banner title: 'Find Your Rushstar Now'.",module:"Landing Page",role:"Client / Visitor",type:"UI Improvement",status:"DONE",priority:"Low",order:5},
+  {desc:"Fix Timezone dropdown no placeholder.",module:"Create Profile Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:6},
+  {desc:"Fix profile-age layout alignment.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:7},
+  {desc:"New Profile Displays Old Inputs in create profile.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:8},
+  {desc:"Reset profile picture to placeholder on new account creation if no image returns from API.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:9},
+  {desc:"Implement Certifications and Insights sections.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:10},
+  {desc:"Fix '3 dots' menu and 'Contact Me' actions (currently non-functional).",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:11},
+  {desc:"Implement/fix professional title display and editing.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium",order:12},
+  {desc:"Fix Tax Information section (saving and editing changes is broken).",module:"Account Settings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:13},
+  {desc:"Configure Billing & Payments infrastructure.",module:"Account Settings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:14},
+  {desc:"Fix job sorting filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:15},
+  {desc:"Fix Job Type and Number of Proposals filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:16},
+  {desc:"Fix Job Category filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:17},
+  {desc:"Activate main Search Bar for jobs.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:18},
+  {desc:"Fix action buttons on cards (Share, 3-dots dropdown, and Report features).",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:19},
+  {desc:"Implement earning snapshot breakdown and Tax Information calculations.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:20},
+  {desc:"Fix Payment Setting configuration and 'Get Paid' release triggers.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:21},
+  {desc:"Fix Earning Snapshot date adjustments and calendar viewing filters.",module:"Get Paid / Earnings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:22},
+  {desc:"Fix Active Contracts tracking and Work Diary sync features.",module:"Contracts & Tracking",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:23},
+  {desc:"Build an interactive Availability Calendar interface.",module:"Scheduling System",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:24},
+  {desc:"Enforce platform-wide minimum contract rate of $15.",module:"Contracts & Tracking",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High",order:25},
+  {desc:"Create and publish Terms & Conditions page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium",order:26},
+  {desc:"Create and publish Privacy Policy page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium",order:27},
+  {desc:"Build Team Messaging (Group Channels) functionality.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:28},
+  {desc:"Integrate Voice Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:29},
+  {desc:"Integrate Video Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:30},
+  {desc:"Add native Emoji Support picker in chat box.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:31},
+  {desc:"Replace the current Camera Icon with a Gallery Media Pick Icon.",module:"Messaging System",role:"Shared (Global)",type:"UI Improvement",status:"Pending",priority:"Medium",order:32},
+  {desc:"Optimize image upload pipeline to fix slow transfer speeds.",module:"Messaging System",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High",order:33},
+  {desc:"Make sent images expandable (lightbox view) when clicked.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:34},
+  {desc:"Add a local download action button when viewing images.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:35},
+  {desc:"Conduct comprehensive QA testing for MP4 file sharing compatibility.",module:"Messaging System",role:"Shared (Global)",type:"QA / Testing",status:"Pending",priority:"High",order:36},
+  {desc:"Completely remove or deprecate the legacy 'Meeting' feature block.",module:"Scheduling System",role:"Shared (Global)",type:"Cleanup",status:"Pending",priority:"Medium",order:37},
+  {desc:"Pricing Page (per Figma design).",module:"Landing Page",role:"Shared (Global)",type:"Feature",status:"DONE",priority:"Medium",order:38},
+  {desc:"Make a working Application page based on Figma design.",module:"Application Page",role:"Freelancer",type:"Feature",status:"DONE",priority:"High",order:39},
+  {desc:"Terms and Conditions / Privacy Policy not yet linked on signup page.",module:"Signup Page",role:"Shared (Global)",type:"Bug Fix",status:"In Progress",priority:"Medium",order:40},
+  {desc:"Clear All buttons not yet working on Application page.",module:"Application Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"Medium",order:41},
+  {desc:"Changes in Application should appear in notification bell.",module:"Notification System",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium",order:42},
 ];
 
+// Module → CSS class map
+const MOD_CLASS={
+  "Messaging System":"mc-messaging","Profile Page":"mc-profile","Create Profile Page":"mc-profile",
+  "Profile Creation":"mc-creation","Job Feed / Search":"mc-job","Scheduling System":"mc-scheduling",
+  "Landing Page":"mc-landing","Get Paid / Earnings":"mc-earnings","Account Settings":"mc-settings",
+  "Contracts & Tracking":"mc-contracts","Legal Pages":"mc-legal","Application Page":"mc-application",
+  "Payment Gateway":"mc-payment","Signup Page":"mc-signup","Notification System":"mc-notification",
+};
+function modClass(m){return MOD_CLASS[m]||'mc-other';}
+
+// Module dot colors for sidebar
+const MOD_COLOR={
+  "Messaging System":"#0052cc","Profile Page":"#6554c0","Create Profile Page":"#6554c0",
+  "Profile Creation":"#c0399f","Job Feed / Search":"#00875a","Scheduling System":"#008da6",
+  "Landing Page":"#e56910","Get Paid / Earnings":"#b8860b","Account Settings":"#344563",
+  "Contracts & Tracking":"#bf2600","Legal Pages":"#505f79","Application Page":"#0065ff",
+  "Payment Gateway":"#006644","Signup Page":"#6554c0","Notification System":"#ff8b00",
+};
+function modColor(m){return MOD_COLOR[m]||'#42526e';}
+
 let tasks=[];
-let viewFilter='all';
-let prioFilter=null;
+let activeFilter='all'; // 'all' | priority | module name
 let moduleFilter=null;
-let activeId=null; // Firestore doc ID string
+let activeId=null;
 let delId=null;
-let quickAdding=false;
+let quickAddCol=null;
 let seeded=false;
+let patchTimer=null;
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ── Real-time listener ──
-COL.orderBy('order').onSnapshot(snapshot=>{
-  if(snapshot.empty && !seeded){
+// ── Firebase listener ──
+COL.orderBy('order').onSnapshot(snap=>{
+  if(snap.empty&&!seeded){
     seeded=true;
     const batch=db.batch();
-    SEED.forEach((t,i)=>{
-      const ref=COL.doc();
-      batch.set(ref,{...t,order:i});
-    });
+    SEED.forEach((t,i)=>{batch.set(COL.doc(),{...t,order:i});});
     batch.commit();
     return;
   }
-  tasks=snapshot.docs.map(doc=>({...doc.data(),fid:doc.id}));
-  renderAll();
+  tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
+  renderBoard();
+  renderSidebar();
+  // re-populate open detail
+  if(activeId){
+    const t=tasks.find(x=>x.fid===activeId);
+    if(t) populateDetail(t);
+  }
 });
 
-// ── Firestore mutations ──
 function addTaskFS(fields){
   const order=tasks.length?Math.max(...tasks.map(t=>t.order??0))+1:0;
-  return COL.add({...fields,status:'Pending',order});
+  return COL.add({...fields,order});
 }
-function updateTaskFS(fid,fields){
-  COL.doc(fid).update(fields);
-}
-function deleteTaskFS(fid){
-  COL.doc(fid).delete();
-}
+function updateTaskFS(fid,fields){COL.doc(fid).update(fields);}
+function deleteTaskFS(fid){COL.doc(fid).delete();}
 
+// ── Filtering ──
 function getFiltered(){
   const q=document.getElementById('global-search').value.toLowerCase().trim();
   return tasks.filter(t=>{
-    if(viewFilter!=='all'&&t.status!==viewFilter)return false;
-    if(prioFilter&&t.priority!==prioFilter)return false;
     if(moduleFilter&&t.module!==moduleFilter)return false;
+    if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
+      if(t.priority!==activeFilter)return false;
+    }
     if(q&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q))return false;
     return true;
   });
 }
 
-function prioIcon(p){
-  if(p==='High') return `<svg viewBox="0 0 24 24" fill="var(--red)" stroke="none" width="12" height="12"><path d="M12 2L2 19h20L12 2z"/></svg>`;
-  if(p==='Medium') return `<svg viewBox="0 0 24 24" fill="var(--amber)" stroke="none" width="12" height="12"><rect x="3" y="10" width="18" height="4" rx="2"/></svg>`;
-  return `<svg viewBox="0 0 24 24" fill="var(--slate)" stroke="none" width="12" height="12"><path d="M12 22L2 5h20L12 22z"/></svg>`;
-}
-function pBadge(p){
-  const cls={High:'p-high',Medium:'p-medium',Low:'p-low'}[p]||'p-low';
-  return `<span class="p-badge ${cls}">${esc(p)}</span>`;
-}
-
-function renderAll(){
-  const filtered=getFiltered();
-  const pending=tasks.filter(t=>t.status==='Pending');
-  const inprog=tasks.filter(t=>t.status==='In Progress');
-  const done=tasks.filter(t=>t.status==='DONE');
-
-  // sidebar counts
+// ── Sidebar ──
+function renderSidebar(){
   document.getElementById('sv-all').textContent=tasks.length;
-  document.getElementById('sv-pending').textContent=pending.length;
-  document.getElementById('sv-inprog').textContent=inprog.length;
-  document.getElementById('sv-done').textContent=done.length;
-  document.getElementById('sp-high').textContent=tasks.filter(t=>t.priority==='High').length;
-  document.getElementById('sp-med').textContent=tasks.filter(t=>t.priority==='Medium').length;
-  document.getElementById('sp-low').textContent=tasks.filter(t=>t.priority==='Low').length;
+  document.getElementById('sv-high').textContent=tasks.filter(t=>t.priority==='High').length;
+  document.getElementById('sv-med').textContent=tasks.filter(t=>t.priority==='Medium').length;
+  document.getElementById('sv-low').textContent=tasks.filter(t=>t.priority==='Low').length;
 
-  // module sidebar
   const modCounts={};
   tasks.forEach(t=>{modCounts[t.module]=(modCounts[t.module]||0)+1;});
   const mods=Object.entries(modCounts).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('module-sidebar').innerHTML=mods.map(([m,c])=>`
-    <div class="sidebar-item ${moduleFilter===m?'active':''}" onclick="setModule(${JSON.stringify(m)},this)">
-      <div class="sidebar-item-left" style="overflow:hidden;">
-        <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${esc(m)}</span>
+  document.getElementById('module-list').innerHTML=mods.map(([m,c])=>`
+    <div class="sb-item${moduleFilter===m?' active':''}" onclick="setModule(${JSON.stringify(m)})">
+      <div class="sb-item-left">
+        <span class="sb-dot-m" style="background:${modColor(m)}"></span>
+        <span class="sb-item-label">${esc(m)}</span>
       </div>
-      <span class="s-count">${c}</span>
+      <span class="sb-count">${c}</span>
     </div>`).join('');
+}
 
-  // view title
-  const titles={all:'All tasks','Pending':'Pending','In Progress':'In progress','DONE':'Done'};
-  document.getElementById('view-title').innerHTML=`${titles[viewFilter]||viewFilter} <span class="view-count">${filtered.length} tasks</span>`;
+// ── Board ──
+function renderBoard(){
+  const filtered=getFiltered();
+  const cols=[
+    {status:'Pending',   label:'Pending',     cls:'pending'},
+    {status:'In Progress',label:'In Progress', cls:'inprog'},
+    {status:'DONE',      label:'Done',         cls:'done'},
+  ];
 
   // status bar
-  document.getElementById('sb-pending').textContent=`${pending.length} pending`;
-  document.getElementById('sb-inprog').textContent=`${inprog.length} in progress`;
-  document.getElementById('sb-done').textContent=`${done.length} done`;
-  document.getElementById('sb-total').textContent=`${tasks.length} total`;
+  document.getElementById('sb-p').textContent=tasks.filter(t=>t.status==='Pending').length;
+  document.getElementById('sb-i').textContent=tasks.filter(t=>t.status==='In Progress').length;
+  document.getElementById('sb-d').textContent=tasks.filter(t=>t.status==='DONE').length;
+  document.getElementById('sb-total').textContent=`${filtered.length} visible / ${tasks.length} total`;
 
-  // task list — group by status if "all" view
-  const list=document.getElementById('task-list');
-  let html='';
+  // filter chips
+  const chips=[];
+  if(moduleFilter) chips.push(`<span class="filter-chip">${esc(moduleFilter)}<span class="x" onclick="clearModule()">×</span></span>`);
+  if(activeFilter!=='all') chips.push(`<span class="filter-chip">${esc(activeFilter)} priority<span class="x" onclick="clearPrio()">×</span></span>`);
+  document.getElementById('active-filter-chips').innerHTML=chips.join('');
 
-  if(viewFilter==='all'){
-    const groups=[
-      {label:'In progress',status:'In Progress',color:'var(--blue)'},
-      {label:'Pending',status:'Pending',color:'var(--amber)'},
-      {label:'Done',status:'DONE',color:'var(--green)'},
-    ];
-    groups.forEach(g=>{
-      const rows=filtered.filter(t=>t.status===g.status);
-      html+=`<div class="group-header">
-        <span class="group-header-name" style="color:${g.color}">${g.label}</span>
-        <span class="group-header-count">${rows.length}</span>
-      </div>`;
-      if(!rows.length){html+=`<div class="empty-group">No tasks</div>`;return;}
-      rows.forEach(t=>{html+=taskRow(t);});
-    });
-  } else {
-    // quick add row at top when adding
-    if(quickAdding&&(viewFilter==='Pending'||viewFilter==='all')){
-      html+=quickAddRow();
-    }
-    filtered.forEach(t=>{html+=taskRow(t);});
-    if(!filtered.length) html=`<div class="empty-group" style="padding:32px 18px;color:var(--t3);">No tasks match the current filter.</div>`;
-  }
+  // board title
+  const titles={all:'All tasks',High:'High priority',Medium:'Medium priority',Low:'Low priority'};
+  document.getElementById('board-title').textContent=moduleFilter||titles[activeFilter]||activeFilter;
 
-  list.innerHTML=html;
+  const boardEl=document.getElementById('board-columns');
+  boardEl.innerHTML=cols.map(col=>{
+    const rows=filtered.filter(t=>t.status===col.status);
+    const isAddingHere=quickAddCol===col.status;
+    return `<div class="column" data-col="${col.status}">
+      <div class="col-header ${col.cls}">
+        <div class="col-title ${col.cls}">
+          ${colIcon(col.cls)} ${col.label}
+        </div>
+        <span class="col-count ${col.cls}">${rows.length}</span>
+      </div>
+      <div class="col-body" id="col-${col.status.replace(' ','-')}"
+        ondragover="onDragOver(event)" ondrop="onDrop(event,'${col.status}')">
+        ${isAddingHere ? quickAddHtml(col.status) : ''}
+        ${rows.length===0&&!isAddingHere ? `<div class="empty-col">No tasks here</div>` : ''}
+        ${rows.map(t=>cardHtml(t)).join('')}
+      </div>
+      <div class="add-another" onclick="openQuickAdd('${col.status}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add a task
+      </div>
+    </div>`;
+  }).join('');
 
-  if(quickAdding){
-    const inp=document.getElementById('qa-input');
-    if(inp){inp.focus();}
+  // focus textarea if quick-adding
+  if(quickAddCol){
+    const ta=document.getElementById('qa-ta');
+    if(ta) ta.focus();
   }
 }
 
-function taskRow(t){
+function colIcon(cls){
+  if(cls==='pending') return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+  if(cls==='inprog')  return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-7.89"/></svg>`;
+  return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+}
+
+function cardHtml(t){
+  const mc=modClass(t.module);
   const isDone=t.status==='DONE';
-  const isActive=t.fid===activeId;
-  const fid=esc(t.fid);
-  return `<div class="task-row${isActive?' selected':''}" onclick="selectTask('${fid}')">
-    <div class="task-checkbox${isDone?' done':''}" onclick="event.stopPropagation();toggleDone('${fid}')" role="checkbox" aria-checked="${isDone}" tabindex="0">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  const prioClass={High:'high',Medium:'medium',Low:'low'}[t.priority]||'low';
+  return `<div class="task-card ${mc}${t.fid===activeId?' drag-over':''}"
+    onclick="selectTask('${esc(t.fid)}')"
+    draggable="true"
+    ondragstart="onDragStart(event,'${esc(t.fid)}')"
+    ondragend="onDragEnd(event)">
+    <div class="card-top">
+      <span class="card-module-badge">${esc(t.module)}</span>
+      <div class="card-prio">
+        <span class="prio-dot ${prioClass}"></span>
+        <button class="card-del" onclick="event.stopPropagation();openDel('${esc(t.fid)}')" aria-label="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </button>
+      </div>
     </div>
-    <div class="prio-icon">${prioIcon(t.priority)}</div>
-    <div class="task-desc${isDone?' done-text':''}">${esc(t.desc)}</div>
-    <div class="task-module">${esc(t.module)}</div>
-    <div class="task-type"><span class="type-pill">${esc(t.type)}</span></div>
-    <div class="task-prio-badge">${pBadge(t.priority)}</div>
-    <button class="task-del" onclick="event.stopPropagation();openDel('${fid}')" aria-label="Delete">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-    </button>
+    <div class="card-desc${isDone?' done-text':''}">${esc(t.desc)}</div>
+    <div class="card-footer">
+      <span class="card-type">${esc(t.type)}</span>
+      <span class="card-role">${esc(t.role)}</span>
+    </div>
   </div>`;
 }
 
-function quickAddRow(){
-  return `<div class="quick-add-row">
-    <div></div><div></div>
-    <input class="quick-add-input" id="qa-input" placeholder="Task description — press Enter to add, Esc to cancel"
-      onkeydown="handleQA(event)" />
-    <div></div><div></div><div></div><div></div>
+function quickAddHtml(status){
+  return `<div class="quick-add-card">
+    <textarea id="qa-ta" placeholder="Task description… (Enter to save, Esc to cancel)" onkeydown="handleQA(event,'${status}')"></textarea>
+    <div class="quick-add-actions">
+      <button class="btn-sm primary" onclick="submitQA('${status}')">Add task</button>
+      <button class="btn-sm ghost" onclick="cancelQA()">Cancel</button>
+    </div>
   </div>`;
 }
 
-function startQuickAdd(){
-  quickAdding=true;
-  if(viewFilter!=='Pending') setView('Pending', document.querySelector('[data-view="Pending"]'));
-  else renderAll();
+function openQuickAdd(status){quickAddCol=status;renderBoard();}
+function cancelQA(){quickAddCol=null;renderBoard();}
+async function submitQA(status){
+  const ta=document.getElementById('qa-ta');
+  const v=ta?ta.value.trim():'';
+  if(!v)return;
+  quickAddCol=null;
+  const ref=await addTaskFS({desc:v,module:'Other',role:'Shared (Global)',type:'Bug Fix',priority:'Medium',status});
+  selectTask(ref.id);
 }
-async function handleQA(e){
-  if(e.key==='Enter'){
-    const v=e.target.value.trim();
-    if(!v) return;
-    quickAdding=false;
-    const ref=await addTaskFS({desc:v,module:'Other',role:'Shared (Global)',type:'Bug Fix',priority:'Medium'});
-    selectTask(ref.id);
-  }
-  if(e.key==='Escape'){quickAdding=false;renderAll();}
-}
-
-function toggleDone(fid){
-  const t=tasks.find(x=>x.fid===fid);
-  if(!t)return;
-  updateTaskFS(fid,{status:t.status==='DONE'?'Pending':'DONE'});
+function handleQA(e,status){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitQA(status);}
+  if(e.key==='Escape'){cancelQA();}
 }
 
+// ── Drag & drop ──
+let dragId=null;
+function onDragStart(e,fid){dragId=fid;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
+function onDragEnd(e){e.currentTarget.classList.remove('dragging');dragId=null;}
+function onDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
+function onDrop(e,status){
+  e.preventDefault();
+  if(!dragId)return;
+  const t=tasks.find(x=>x.fid===dragId);
+  if(t&&t.status!==status){updateTaskFS(dragId,{status});}
+  dragId=null;
+}
+
+// ── Select / Detail ──
 function selectTask(fid){
   activeId=fid;
   const t=tasks.find(x=>x.fid===fid);
   if(!t)return;
   populateDetail(t);
   document.getElementById('detail-panel').classList.add('open');
-  renderAll();
+  renderBoard();
 }
 function closeDetail(){
   activeId=null;
   document.getElementById('detail-panel').classList.remove('open');
-  renderAll();
+  renderBoard();
 }
 function populateDetail(t){
-  document.getElementById('d-id').textContent=`${t.module} · ${t.role}`;
+  document.getElementById('d-meta').textContent=`${t.module} · ${t.role}`;
   document.getElementById('d-desc').value=t.desc;
   ['status','priority','type','module','role'].forEach(k=>{
     const el=document.getElementById('d-'+k);
-    if(el) el.value=t[k];
+    if(el)el.value=t[k];
   });
 }
-let patchTimer=null;
 function patchActive(field,value){
   if(!activeId)return;
   clearTimeout(patchTimer);
-  patchTimer=setTimeout(()=>updateTaskFS(activeId,{[field]:value}),300);
+  patchTimer=setTimeout(()=>updateTaskFS(activeId,{[field]:value}),280);
 }
 
+// ── Filters ──
 function setView(v,el){
-  viewFilter=v; prioFilter=null; moduleFilter=null; quickAdding=false;
-  document.querySelectorAll('.sidebar-item[data-view]').forEach(x=>x.classList.remove('active'));
+  activeFilter=v;moduleFilter=null;
+  document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.remove('active'));
   if(el)el.classList.add('active');
-  document.querySelectorAll('.sidebar-item[data-prio]').forEach(x=>x.classList.remove('active'));
-  renderAll();
+  renderBoard();
 }
-function setPrio(p,el){
-  prioFilter=prioFilter===p?null:p;
-  document.querySelectorAll('.sidebar-item[data-prio]').forEach(x=>x.classList.toggle('active',x===el&&prioFilter===p));
-  document.querySelectorAll('.sidebar-item[data-view]').forEach(x=>x.classList.remove('active'));
-  moduleFilter=null; viewFilter='all';
-  renderAll();
-}
-function setModule(m,el){
+function setModule(m){
   moduleFilter=moduleFilter===m?null:m;
-  prioFilter=null; viewFilter='all';
-  document.querySelectorAll('.sidebar-item[data-view]').forEach(x=>x.classList.remove('active'));
-  renderAll();
+  activeFilter='all';
+  document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view==='all'&&!moduleFilter));
+  document.getElementById('sv-all')&&document.querySelector('[data-view="all"]')?.classList.toggle('active',!moduleFilter);
+  if(!moduleFilter)document.querySelector('[data-view="all"]')?.classList.add('active');
+  renderBoard();renderSidebar();
 }
+function clearModule(){moduleFilter=null;document.querySelector('[data-view="all"]')?.classList.add('active');renderBoard();renderSidebar();}
+function clearPrio(){activeFilter='all';document.querySelector('[data-view="all"]')?.classList.add('active');document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view==='all'));renderBoard();}
 
-// Delete
+// ── Delete ──
 function openDel(fid){
   delId=fid;
   const t=tasks.find(x=>x.fid===fid);
-  document.getElementById('del-desc').textContent=t?`"${t.desc.slice(0,80)}${t.desc.length>80?'…':''}"`:'';
+  document.getElementById('del-desc').textContent=t?`"${t.desc.slice(0,80)}${t.desc.length>80?'…':''}"`:'This action cannot be undone.';
   document.getElementById('del-overlay').classList.add('open');
 }
 function closeDel(){document.getElementById('del-overlay').classList.remove('open');delId=null;}
@@ -805,11 +847,9 @@ function confirmDel(){
 }
 document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeDel();if(!quickAdding)closeDetail();}
+  if(e.key==='Escape'){closeDel();if(quickAddCol){cancelQA();}else{closeDetail();}}
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search').focus();}
 });
-
-// renderAll() is now driven by onSnapshot — no manual call needed
 </script>
 </body>
 </html>
