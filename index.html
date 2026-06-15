@@ -702,7 +702,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <option>Signup Page</option><option>Notification System</option><option>Other</option>
           </select>
           <div id="am-module-custom-wrap" style="display:none;margin-top:0;">
-            <input class="am-select" id="am-module-custom" type="text" placeholder="Type module name…"/>
+            <input class="am-select" id="am-module-custom" type="text" placeholder="Type module name…" oninput="this.dataset.val=this.value"/>
             <span onclick="resetModuleSelect('am-module','am-module-custom')" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
           </div>
         </div>
@@ -989,10 +989,10 @@ COL.orderBy('order').onSnapshot(snap=>{
   tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
   renderBoard();
   renderSidebar();
-  // re-populate open detail
+  // re-populate open detail only if custom module input is not focused
   if(activeId){
     const t=tasks.find(x=>x.fid===activeId);
-    if(t) populateDetail(t);
+    if(t&&document.activeElement!==document.getElementById('d-module-custom')) populateDetail(t);
   }
 });
 
@@ -1237,17 +1237,21 @@ function amKeydown(e){
 async function submitAddModal(){
   const desc=document.getElementById('am-desc').value.trim();
   if(!desc){document.getElementById('am-desc').focus();return;}
-  closeAddModal();
-  const modSel=document.getElementById('am-module');
-  const modVal=modSel.value==='Other'
+  // read values BEFORE closing (closing resets the DOM)
+  const modWrap=document.getElementById('am-module-custom-wrap');
+  const modVal=modWrap.style.display!=='none'
     ?(document.getElementById('am-module-custom').value.trim()||'Other')
-    :modSel.value;
+    :document.getElementById('am-module').value;
+  const priority=document.getElementById('am-priority').value;
+  const type=document.getElementById('am-type').value;
+  const role=document.getElementById('am-role').value;
+  closeAddModal();
   const ref=await addTaskFS({
     desc,
     module:modVal,
-    priority:document.getElementById('am-priority').value,
-    type:document.getElementById('am-type').value,
-    role:document.getElementById('am-role').value,
+    priority,
+    type,
+    role,
     status:addModalStatus,
   });
   playSuccess();
