@@ -560,6 +560,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <div class="sb-divider"></div>
 
   <div class="sb-section">
+    <div class="sb-label">Role</div>
+    <div id="role-list"></div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-section">
     <div class="sb-label">Modules</div>
     <div id="module-list"></div>
   </div>
@@ -967,8 +974,9 @@ const MOD_COLOR={
 function modColor(m){return MOD_COLOR[m]||'#42526e';}
 
 let tasks=[];
-let activeFilter='all'; // 'all' | priority | module name
+let activeFilter='all';
 let moduleFilter=null;
+let roleFilter=null;
 let activeId=null;
 let delId=null;
 let quickAddCol=null;
@@ -1029,6 +1037,7 @@ function getFiltered(){
   const q=document.getElementById('global-search').value.toLowerCase().trim();
   return tasks.filter(t=>{
     if(moduleFilter&&t.module!==moduleFilter)return false;
+    if(roleFilter&&t.role!==roleFilter)return false;
     if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
       if(t.priority!==activeFilter)return false;
     }
@@ -1044,6 +1053,22 @@ function renderSidebar(){
   document.getElementById('sv-med').textContent=tasks.filter(t=>t.priority==='Medium').length;
   document.getElementById('sv-low').textContent=tasks.filter(t=>t.priority==='Low').length;
 
+  const roleCounts={};
+  tasks.forEach(t=>{roleCounts[t.role]=(roleCounts[t.role]||0)+1;});
+  const roleIcons={'Client':'👤','Freelancer':'💼','Shared (Global)':'🌐','Client / Visitor':'👁'};
+  document.getElementById('role-list').innerHTML=Object.entries(roleCounts).sort((a,b)=>b[1]-a[1]).map(([r,c])=>`
+    <div class="sb-item${roleFilter===r?' active':''}" data-role="${esc(r)}">
+      <div class="sb-item-left">
+        <span style="font-size:12px">${roleIcons[r]||'👤'}</span>
+        <span class="sb-item-label">${esc(r)}</span>
+      </div>
+      <span class="sb-count">${c}</span>
+    </div>`).join('');
+  document.getElementById('role-list').onclick=e=>{
+    const item=e.target.closest('[data-role]');
+    if(item){setRole(item.dataset.role);}
+  };
+
   const modCounts={};
   tasks.forEach(t=>{modCounts[t.module]=(modCounts[t.module]||0)+1;});
   const mods=Object.entries(modCounts).sort((a,b)=>b[1]-a[1]);
@@ -1055,7 +1080,6 @@ function renderSidebar(){
       </div>
       <span class="sb-count">${c}</span>
     </div>`).join('');
-  // re-bind clicks via delegation (avoids JSON escaping issues)
   document.getElementById('module-list').onclick=e=>{
     const item=e.target.closest('[data-module]');
     if(item){setModule(item.dataset.module);}
@@ -1080,6 +1104,7 @@ function renderBoard(){
   // filter chips
   const chips=[];
   if(moduleFilter) chips.push(`<span class="filter-chip">${esc(moduleFilter)}<span class="x" onclick="clearModule()">×</span></span>`);
+  if(roleFilter) chips.push(`<span class="filter-chip">${esc(roleFilter)}<span class="x" onclick="clearRole()">×</span></span>`);
   if(activeFilter!=='all') chips.push(`<span class="filter-chip">${esc(activeFilter)} priority<span class="x" onclick="clearPrio()">×</span></span>`);
   document.getElementById('active-filter-chips').innerHTML=chips.join('');
 
@@ -1365,6 +1390,8 @@ function setModule(m){
   renderBoard();renderSidebar();
 }
 function clearModule(){playTick();moduleFilter=null;document.querySelector('[data-view="all"]')?.classList.add('active');renderBoard();renderSidebar();}
+function setRole(r){playTick();roleFilter=roleFilter===r?null:r;renderBoard();renderSidebar();}
+function clearRole(){playTick();roleFilter=null;renderBoard();renderSidebar();}
 function clearPrio(){playTick();activeFilter='all';document.querySelector('[data-view="all"]')?.classList.add('active');document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view==='all'));renderBoard();}
 
 // ── Delete ──
