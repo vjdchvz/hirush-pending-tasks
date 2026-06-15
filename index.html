@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Hirush — Task Board</title>
+<title>Stack OverBoard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -566,7 +566,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
     <div class="login-logo">
       <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
-    <div class="login-title">Hirush Task Board</div>
+    <div class="login-title">Stack OverBoard</div>
     <div class="login-sub">Sign in to manage tasks, track changes,<br>and collaborate with your team.</div>
     <button class="google-btn" onclick="signInWithGoogle()">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
@@ -582,7 +582,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
     <div class="brand-dot">
       <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
-    <span class="brand-name">Hirush <span>/ Tasks</span></span>
+    <span class="brand-name">Stack <span>OverBoard</span></span>
   </div>
   <div class="topbar-divider"></div>
   <div class="topbar-search">
@@ -618,6 +618,16 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 
 <!-- SIDEBAR -->
 <div class="sidebar">
+  <div class="sb-section">
+    <div class="sb-label" style="display:flex;align-items:center;justify-content:space-between;">
+      Boards
+      <button onclick="openNewBoard()" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;" title="New board">+</button>
+    </div>
+    <div id="board-list"></div>
+  </div>
+
+  <div class="sb-divider"></div>
+
   <div class="sb-section">
     <div class="sb-label">Views</div>
     <div class="sb-item active" data-view="all" onclick="setView('all',this)">
@@ -888,8 +898,76 @@ firebase.initializeApp({
 });
 const db=firebase.firestore();
 const auth=firebase.auth();
-const COL=db.collection('tasks');
-const LOGS=db.collection('logs');
+const BOARDS=db.collection('boards');
+let COL=null;
+let LOGS=null;
+let activeBoardId=null;
+let tasksUnsub=null;
+
+// ── Boards ──
+let boardsUnsub=null;
+
+function switchBoard(boardId,boardName){
+  if(activeBoardId===boardId)return;
+  activeBoardId=boardId;
+  localStorage.setItem('sob-board',boardId);
+  COL=BOARDS.doc(boardId).collection('tasks');
+  LOGS=BOARDS.doc(boardId).collection('logs');
+  tasks=[];
+  renderBoard();
+  // unsubscribe old task listener
+  if(tasksUnsub){tasksUnsub();tasksUnsub=null;}
+  if(logsUnsub){logsUnsub();logsUnsub=null;activityOpen=false;document.getElementById('activity-panel')&&document.getElementById('activity-panel').classList.remove('open');}
+  // update sidebar active state
+  document.querySelectorAll('#board-list .sb-item').forEach(el=>el.classList.toggle('active',el.dataset.bid===boardId));
+  document.getElementById('board-title').textContent=boardName||'Tasks';
+  // subscribe tasks
+  tasksUnsub=COL.orderBy('order').onSnapshot(snap=>{
+    if(snap.empty&&!seeded){
+      seeded=true;
+      return; // no seed for new boards
+    }
+    tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
+    renderBoard();
+    renderSidebar();
+    if(activeId){
+      const t=tasks.find(x=>x.fid===activeId);
+      if(t&&document.activeElement!==document.getElementById('d-module-custom')) populateDetail(t);
+    }
+  });
+}
+
+function startBoards(){
+  boardsUnsub=BOARDS.orderBy('createdAt').onSnapshot(snap=>{
+    const list=document.getElementById('board-list');
+    if(!list)return;
+    if(snap.empty){
+      // create default Hirush board
+      BOARDS.add({name:'Hirush',createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,email:currentUser?.email}});
+      return;
+    }
+    list.innerHTML=snap.docs.map(d=>`
+      <div class="sb-item${activeBoardId===d.id?' active':''}" data-bid="${d.id}" onclick="switchBoard('${d.id}','${esc(d.data().name)}')">
+        <div class="sb-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          <span class="sb-item-label">${esc(d.data().name)}</span>
+        </div>
+      </div>`).join('');
+    // auto-switch to saved or first board
+    if(!activeBoardId){
+      const saved=localStorage.getItem('sob-board');
+      const target=snap.docs.find(d=>d.id===saved)||snap.docs[0];
+      switchBoard(target.id,target.data().name);
+    }
+  });
+}
+
+function openNewBoard(){
+  const name=prompt('Board name:');
+  if(!name||!name.trim())return;
+  BOARDS.add({name:name.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,email:currentUser?.email}})
+    .then(ref=>switchBoard(ref.id,name.trim()));
+}
 
 // ── Auth ──
 let currentUser=null;
@@ -927,6 +1005,7 @@ auth.onAuthStateChanged(user=>{
     }
     document.getElementById('user-name-label').textContent=user.displayName||user.email;
     startPresence(user);
+    startBoards();
     playSuccess();
   } else {
     loginScreen.classList.remove('hidden');
@@ -966,7 +1045,7 @@ function startPresence(user){
 
 // ── Activity logging ──
 function logAction(action, taskDesc, prevData, fid){
-  if(!currentUser)return;
+  if(!currentUser||!LOGS)return;
   LOGS.add({
     action,
     taskDesc:(taskDesc||'').slice(0,80),
@@ -1007,7 +1086,7 @@ function toggleActivity(){
   playTick();
   document.getElementById('activity-panel').classList.toggle('open',activityOpen);
   document.getElementById('activity-dot').style.display='none';
-  if(activityOpen&&!logsUnsub){
+  if(activityOpen&&!logsUnsub&&LOGS){
     logsUnsub=LOGS.orderBy('ts','desc').limit(50).onSnapshot(snap=>{
       const list=document.getElementById('activity-list');
       if(!snap.docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
@@ -1280,23 +1359,6 @@ function highlight(text,q){
 }
 
 // ── Firebase listener ──
-COL.orderBy('order').onSnapshot(snap=>{
-  if(snap.empty&&!seeded){
-    seeded=true;
-    const batch=db.batch();
-    SEED.forEach((t,i)=>{batch.set(COL.doc(),{...t,order:i});});
-    batch.commit();
-    return;
-  }
-  tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
-  renderBoard();
-  renderSidebar();
-  // re-populate open detail only if custom module input is not focused
-  if(activeId){
-    const t=tasks.find(x=>x.fid===activeId);
-    if(t&&document.activeElement!==document.getElementById('d-module-custom')) populateDetail(t);
-  }
-});
 
 function userStamp(){
   if(!currentUser)return{};
