@@ -619,16 +619,6 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sb-section">
-    <div class="sb-label" style="display:flex;align-items:center;justify-content:space-between;">
-      Boards
-      <button onclick="openNewBoard()" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;" title="New board">+</button>
-    </div>
-    <div id="board-list"></div>
-  </div>
-
-  <div class="sb-divider"></div>
-
-  <div class="sb-section">
     <div class="sb-label">Views</div>
     <div class="sb-item active" data-view="all" onclick="setView('all',this)">
       <div class="sb-item-left">
@@ -898,76 +888,8 @@ firebase.initializeApp({
 });
 const db=firebase.firestore();
 const auth=firebase.auth();
-const BOARDS=db.collection('boards');
-let COL=null;
-let LOGS=null;
-let activeBoardId=null;
-let tasksUnsub=null;
-
-// ── Boards ──
-let boardsUnsub=null;
-
-function switchBoard(boardId,boardName){
-  if(activeBoardId===boardId)return;
-  activeBoardId=boardId;
-  localStorage.setItem('sob-board',boardId);
-  COL=BOARDS.doc(boardId).collection('tasks');
-  LOGS=BOARDS.doc(boardId).collection('logs');
-  tasks=[];
-  renderBoard();
-  // unsubscribe old task listener
-  if(tasksUnsub){tasksUnsub();tasksUnsub=null;}
-  if(logsUnsub){logsUnsub();logsUnsub=null;activityOpen=false;document.getElementById('activity-panel')&&document.getElementById('activity-panel').classList.remove('open');}
-  // update sidebar active state
-  document.querySelectorAll('#board-list .sb-item').forEach(el=>el.classList.toggle('active',el.dataset.bid===boardId));
-  document.getElementById('board-title').textContent=boardName||'Tasks';
-  // subscribe tasks
-  tasksUnsub=COL.orderBy('order').onSnapshot(snap=>{
-    if(snap.empty&&!seeded){
-      seeded=true;
-      return; // no seed for new boards
-    }
-    tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
-    renderBoard();
-    renderSidebar();
-    if(activeId){
-      const t=tasks.find(x=>x.fid===activeId);
-      if(t&&document.activeElement!==document.getElementById('d-module-custom')) populateDetail(t);
-    }
-  });
-}
-
-function startBoards(){
-  boardsUnsub=BOARDS.orderBy('createdAt').onSnapshot(snap=>{
-    const list=document.getElementById('board-list');
-    if(!list)return;
-    if(snap.empty){
-      // create default Hirush board
-      BOARDS.add({name:'Hirush',createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,email:currentUser?.email}});
-      return;
-    }
-    list.innerHTML=snap.docs.map(d=>`
-      <div class="sb-item${activeBoardId===d.id?' active':''}" data-bid="${d.id}" onclick="switchBoard('${d.id}','${esc(d.data().name)}')">
-        <div class="sb-item-left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-          <span class="sb-item-label">${esc(d.data().name)}</span>
-        </div>
-      </div>`).join('');
-    // auto-switch to saved or first board
-    if(!activeBoardId){
-      const saved=localStorage.getItem('sob-board');
-      const target=snap.docs.find(d=>d.id===saved)||snap.docs[0];
-      switchBoard(target.id,target.data().name);
-    }
-  });
-}
-
-function openNewBoard(){
-  const name=prompt('Board name:');
-  if(!name||!name.trim())return;
-  BOARDS.add({name:name.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,email:currentUser?.email}})
-    .then(ref=>switchBoard(ref.id,name.trim()));
-}
+const COL=db.collection('tasks');
+const LOGS=db.collection('logs');
 
 // ── Auth ──
 let currentUser=null;
@@ -1005,7 +927,6 @@ auth.onAuthStateChanged(user=>{
     }
     document.getElementById('user-name-label').textContent=user.displayName||user.email;
     startPresence(user);
-    startBoards();
     playSuccess();
   } else {
     loginScreen.classList.remove('hidden');
@@ -1045,7 +966,7 @@ function startPresence(user){
 
 // ── Activity logging ──
 function logAction(action, taskDesc, prevData, fid){
-  if(!currentUser||!LOGS)return;
+  if(!currentUser)return;
   LOGS.add({
     action,
     taskDesc:(taskDesc||'').slice(0,80),
@@ -1086,7 +1007,7 @@ function toggleActivity(){
   playTick();
   document.getElementById('activity-panel').classList.toggle('open',activityOpen);
   document.getElementById('activity-dot').style.display='none';
-  if(activityOpen&&!logsUnsub&&LOGS){
+  if(activityOpen&&!logsUnsub){
     logsUnsub=LOGS.orderBy('ts','desc').limit(50).onSnapshot(snap=>{
       const list=document.getElementById('activity-list');
       if(!snap.docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
@@ -1822,6 +1743,23 @@ function onDrop(e,status){
   }
   dragId=null;dragOverId=null;
 }
+COL.orderBy('order').onSnapshot(snap=>{
+  if(snap.empty&&!seeded){
+    seeded=true;
+    const batch=db.batch();
+    SEED.forEach((t,i)=>{batch.set(COL.doc(),{...t,order:i});});
+    batch.commit();
+    return;
+  }
+  tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
+  renderBoard();
+  renderSidebar();
+  if(activeId){
+    const t=tasks.find(x=>x.fid===activeId);
+    if(t&&document.activeElement!==document.getElementById('d-module-custom')) populateDetail(t);
+  }
+});
+
 document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
 document.getElementById('add-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAddModal();});
 document.getElementById('edit-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail();});
