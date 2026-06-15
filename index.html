@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -343,6 +344,71 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .spin{width:18px;height:18px;border:2px solid var(--bd);border-top-color:#0052cc;border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* LOGIN SCREEN */
+.login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1e2a3a 0%,#0d1b2e 100%);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0;}
+.login-screen.hidden{display:none;}
+.login-card{background:#fff;border-radius:18px;padding:44px 48px;width:400px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.35);}
+.login-logo{width:52px;height:52px;background:#0052cc;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+.login-logo svg{width:28px;height:28px;stroke:#fff;stroke-width:2.5;}
+.login-title{font-size:22px;font-weight:700;color:var(--t1);margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--t2);margin-bottom:32px;line-height:1.6;}
+.google-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:13px 20px;border-radius:10px;
+  border:1.5px solid var(--bd2);background:#fff;
+  font-size:14px;font-weight:600;color:var(--t1);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.google-btn:hover{background:#f8f9fa;border-color:#0052cc;box-shadow:0 2px 12px rgba(0,82,204,.15);}
+.google-btn svg{width:20px;height:20px;flex-shrink:0;}
+.login-note{font-size:11px;color:var(--t3);margin-top:16px;}
+
+/* USER AVATAR in topbar */
+.user-pill{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 10px 4px 4px;border-radius:20px;transition:background .12s;}
+.user-pill:hover{background:rgba(255,255,255,.1);}
+.user-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.3);}
+.user-avatar-fallback{width:28px;height:28px;border-radius:50%;background:#0052cc;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.3);}
+.user-name{font-size:12px;font-weight:500;color:rgba(255,255,255,.85);}
+.signout-btn{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;transition:all .12s;}
+.signout-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+
+/* ACTIVITY PANEL */
+.activity-panel{width:0;min-width:0;background:#fff;border-left:1px solid var(--bd);overflow:hidden;transition:width .2s ease;flex-shrink:0;display:flex;flex-direction:column;}
+.activity-panel.open{width:300px;min-width:300px;}
+.activity-inner{width:300px;display:flex;flex-direction:column;height:100%;}
+.activity-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.activity-hd-title{font-size:12px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:.06em;}
+.activity-close{background:none;border:none;cursor:pointer;color:var(--t3);padding:4px;border-radius:4px;display:flex;}
+.activity-close:hover{background:var(--bg);}
+.activity-close svg{width:14px;height:14px;stroke:currentColor;}
+.activity-list{flex:1;overflow-y:auto;padding:8px 0;}
+.activity-list::-webkit-scrollbar{width:3px;}
+.activity-list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.activity-item{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #f4f5f7;}
+.activity-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.activity-avatar-fb{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.activity-content{flex:1;min-width:0;}
+.activity-user{font-size:11px;font-weight:600;color:var(--t1);}
+.activity-action{font-size:11px;color:var(--t2);margin-top:1px;line-height:1.4;}
+.activity-time{font-size:10px;color:var(--t3);margin-top:3px;}
+.activity-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;}
+.ab-add{background:#e3fcef;color:#006644;}
+.ab-edit{background:#e6f0ff;color:#0052cc;}
+.ab-del{background:#ffebe6;color:#bf2600;}
+.ab-move{background:#fff8e1;color:#7a5f00;}
+.activity-empty{text-align:center;padding:40px 16px;font-size:12px;color:var(--t3);}
+
+/* card edit stamp */
+.card-stamp{font-size:9px;color:var(--t3);margin-top:6px;display:flex;align-items:center;gap:4px;border-top:1px solid #f4f5f7;padding-top:6px;}
+.card-stamp img{width:14px;height:14px;border-radius:50%;}
+.card-stamp-fb{width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;}
+
+/* topbar activity button */
+.btn-activity{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.8);cursor:pointer;font-family:inherit;transition:all .12s;}
+.btn-activity:hover{background:rgba(255,255,255,.2);color:#fff;}
+.btn-activity svg{width:13px;height:13px;stroke:currentColor;}
+.activity-dot{width:7px;height:7px;border-radius:50%;background:#36b37e;display:inline-block;margin-left:2px;}
+
 /* ADD TASK MODAL */
 .add-modal-overlay{position:fixed;inset:0;background:rgba(9,30,66,.5);display:flex;align-items:center;justify-content:center;z-index:400;opacity:0;pointer-events:none;transition:opacity .18s;}
 .add-modal-overlay.open{opacity:1;pointer-events:all;}
@@ -395,6 +461,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="login-title">Hirush Task Board</div>
+    <div class="login-sub">Sign in to manage tasks, track changes,<br>and collaborate with your team.</div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
+    <div class="login-note">Only team members with the link can access this board.</div>
+  </div>
+</div>
+
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="brand">
@@ -409,10 +491,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <input type="text" id="global-search" placeholder="Search tasks…" oninput="renderBoard()"/>
   </div>
   <div class="topbar-right">
+    <button class="btn-activity" onclick="toggleActivity()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Activity <span class="activity-dot" id="activity-dot" style="display:none"></span>
+    </button>
     <button class="btn-add-top" onclick="openAddModal('Pending')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add task
     </button>
+    <div class="user-pill" id="user-pill" style="display:none">
+      <div id="user-avatar-wrap"></div>
+      <span class="user-name" id="user-name-label"></span>
+    </div>
+    <button class="signout-btn" id="signout-btn" style="display:none" onclick="signOut()">Sign out</button>
   </div>
 </div>
 
@@ -545,6 +636,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
 </div>
 
+  <!-- ACTIVITY PANEL -->
+  <div class="activity-panel" id="activity-panel">
+    <div class="activity-inner">
+      <div class="activity-hd">
+        <span class="activity-hd-title">Activity log</span>
+        <button class="activity-close" onclick="toggleActivity()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="activity-list" id="activity-list">
+        <div class="activity-empty">No activity yet.</div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /layout -->
 
 <!-- ADD TASK MODAL -->
@@ -630,7 +736,113 @@ firebase.initializeApp({
   appId:"1:268911377416:web:724a71185832e6c4d625bd"
 });
 const db=firebase.firestore();
+const auth=firebase.auth();
 const COL=db.collection('tasks');
+const LOGS=db.collection('logs');
+
+// ── Auth ──
+let currentUser=null;
+
+function signInWithGoogle(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(e=>alert('Sign-in failed: '+e.message));
+}
+function signOut(){
+  auth.signOut();
+  playTick();
+}
+
+auth.onAuthStateChanged(user=>{
+  currentUser=user;
+  const loginScreen=document.getElementById('login-screen');
+  const userPill=document.getElementById('user-pill');
+  const signoutBtn=document.getElementById('signout-btn');
+  if(user){
+    loginScreen.classList.add('hidden');
+    userPill.style.display='flex';
+    signoutBtn.style.display='block';
+    // avatar
+    const wrap=document.getElementById('user-avatar-wrap');
+    if(user.photoURL){
+      wrap.innerHTML=`<img class="user-avatar" src="${user.photoURL}" alt="${user.displayName}"/>`;
+    } else {
+      const initials=(user.displayName||user.email||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      wrap.innerHTML=`<div class="user-avatar-fallback">${initials}</div>`;
+    }
+    document.getElementById('user-name-label').textContent=user.displayName||user.email;
+    playSuccess();
+  } else {
+    loginScreen.classList.remove('hidden');
+    userPill.style.display='none';
+    signoutBtn.style.display='none';
+  }
+});
+
+// ── Activity logging ──
+function logAction(action, taskDesc){
+  if(!currentUser)return;
+  LOGS.add({
+    action,
+    taskDesc:(taskDesc||'').slice(0,80),
+    user:{
+      name:currentUser.displayName||currentUser.email,
+      email:currentUser.email,
+      photo:currentUser.photoURL||null,
+    },
+    ts:firebase.firestore.FieldValue.serverTimestamp(),
+  });
+  document.getElementById('activity-dot').style.display='inline-block';
+}
+
+// ── Activity panel ──
+let activityOpen=false;
+let logsUnsub=null;
+
+function toggleActivity(){
+  activityOpen=!activityOpen;
+  playTick();
+  document.getElementById('activity-panel').classList.toggle('open',activityOpen);
+  document.getElementById('activity-dot').style.display='none';
+  if(activityOpen&&!logsUnsub){
+    logsUnsub=LOGS.orderBy('ts','desc').limit(50).onSnapshot(snap=>{
+      const list=document.getElementById('activity-list');
+      if(!snap.docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
+      list.innerHTML=snap.docs.map(d=>{
+        const l=d.data();
+        const u=l.user||{};
+        const avatarHtml=u.photo
+          ?`<img class="activity-avatar" src="${esc(u.photo)}" alt="${esc(u.name||'')}"/>`
+          :`<div class="activity-avatar-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||u.email||'?')}</div>`;
+        const badgeCls={added:'ab-add',edited:'ab-edit',deleted:'ab-del',moved:'ab-move'}[l.action]||'ab-edit';
+        const timeStr=l.ts?timeAgo(l.ts.toDate()):'-';
+        return `<div class="activity-item">
+          ${avatarHtml}
+          <div class="activity-content">
+            <div class="activity-user">${esc(u.name||u.email||'Unknown')}</div>
+            <div class="activity-action">
+              <span class="activity-badge ${badgeCls}">${esc(l.action)}</span>
+              &nbsp;${esc((l.taskDesc||'').slice(0,50))}${(l.taskDesc||'').length>50?'…':''}
+            </div>
+            <div class="activity-time">${timeStr}</div>
+          </div>
+        </div>`;
+      }).join('');
+    });
+  }
+}
+
+function strColor(name){
+  let h=0;for(let c of name)h=(h*31+c.charCodeAt(0))%360;
+  return `hsl(${h},55%,40%)`;
+}
+function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function timeAgo(date){
+  const s=Math.floor((Date.now()-date)/1000);
+  if(s<60)return 'just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
 
 const SEED=[
   {desc:"Implement GCash Top-Up flow for buying HiRush Points.",module:"Payment Gateway",role:"Client",type:"Integration",status:"Pending",priority:"High",order:0},
@@ -728,12 +940,31 @@ COL.orderBy('order').onSnapshot(snap=>{
   }
 });
 
+function userStamp(){
+  if(!currentUser)return{};
+  return{
+    lastEditedBy:{name:currentUser.displayName||currentUser.email,email:currentUser.email,photo:currentUser.photoURL||null},
+    lastEditedAt:firebase.firestore.FieldValue.serverTimestamp(),
+  };
+}
 function addTaskFS(fields){
   const order=tasks.length?Math.max(...tasks.map(t=>t.order??0))+1:0;
-  return COL.add({...fields,order});
+  const data={...fields,order,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
+  const ref=COL.add(data);
+  logAction('added',fields.desc);
+  return ref;
 }
-function updateTaskFS(fid,fields){COL.doc(fid).update(fields);}
-function deleteTaskFS(fid){COL.doc(fid).delete();}
+function updateTaskFS(fid,fields){
+  const t=tasks.find(x=>x.fid===fid);
+  const action=fields.status&&t&&fields.status!==t.status?'moved':'edited';
+  COL.doc(fid).update({...fields,...userStamp()});
+  logAction(action,t?.desc);
+}
+function deleteTaskFS(fid){
+  const t=tasks.find(x=>x.fid===fid);
+  logAction('deleted',t?.desc);
+  COL.doc(fid).delete();
+}
 
 // ── Filtering ──
 function getFiltered(){
@@ -829,6 +1060,16 @@ function renderBoard(){
   }
 }
 
+function cardStamp(t){
+  const e=t.lastEditedBy;
+  if(!e)return '';
+  const avatarHtml=e.photo
+    ?`<img src="${esc(e.photo)}" style="width:14px;height:14px;border-radius:50%;object-fit:cover;" alt="${esc(e.name||'')}"/>`
+    :`<span class="card-stamp-fb" style="background:${strColor(e.name||'?')}">${initials(e.name||e.email||'?')}</span>`;
+  const when=t.lastEditedAt?timeAgo(t.lastEditedAt.toDate()):'';
+  return `<div class="card-stamp">${avatarHtml}<span>${esc(e.name||e.email||'')}${when?' · '+when:''}</span></div>`;
+}
+
 function colIcon(cls){
   if(cls==='pending') return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
   if(cls==='inprog')  return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-7.89"/></svg>`;
@@ -858,6 +1099,7 @@ function cardHtml(t){
       <span class="card-type">${esc(t.type)}</span>
       <span class="card-role">${esc(t.role)}</span>
     </div>
+    ${cardStamp(t)}
   </div>`;
 }
 
