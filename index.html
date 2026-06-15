@@ -267,57 +267,70 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   border:2px dashed var(--bd);border-radius:var(--rc);
 }
 
-/* DETAIL PANEL */
-.detail{
-  width:0;min-width:0;background:var(--white);
-  border-left:1px solid var(--bd);
-  overflow:hidden;transition:width .18s ease;
-  flex-shrink:0;display:flex;flex-direction:column;
+/* EDIT TASK MODAL (centered card) */
+.edit-overlay{position:fixed;inset:0;background:rgba(9,30,66,.45);display:flex;align-items:center;justify-content:center;z-index:400;opacity:0;pointer-events:none;transition:opacity .18s;padding:20px;}
+.edit-overlay.open{opacity:1;pointer-events:all;}
+.edit-card{
+  background:#fff;border-radius:16px;width:620px;max-width:100%;max-height:90vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 80px rgba(9,30,66,.28);
+  transform:translateY(20px) scale(.97);transition:transform .2s;
+  overflow:hidden;
 }
-.detail.open{width:340px;min-width:340px;}
-.detail-inner{width:340px;display:flex;flex-direction:column;height:100%;overflow:hidden;}
-.detail-hd{
+.edit-overlay.open .edit-card{transform:translateY(0) scale(1);}
+.edit-card-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;border-bottom:1px solid var(--bd);flex-shrink:0;
+  padding:18px 22px 14px;border-bottom:1px solid var(--bd);
+  flex-shrink:0;
 }
-.detail-hd-title{font-size:12px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:.06em;}
-.detail-close{background:none;border:none;cursor:pointer;color:var(--t3);padding:4px;border-radius:4px;display:flex;transition:all .1s;}
-.detail-close:hover{background:var(--bg);color:var(--t1);}
-.detail-close svg{width:15px;height:15px;stroke:currentColor;}
-.detail-body{flex:1;overflow-y:auto;padding:16px;}
-.detail-body::-webkit-scrollbar{width:4px;}
-.detail-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
-.d-field{margin-bottom:14px;}
-.d-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:5px;}
-.d-textarea{
-  width:100%;background:transparent;
-  border:1px solid transparent;border-radius:var(--r);
-  padding:7px 9px;font-size:13px;font-weight:500;
-  font-family:inherit;color:var(--t1);outline:none;
-  resize:none;min-height:80px;line-height:1.6;
-  transition:border-color .12s,background .12s;
+.edit-card-module{display:flex;align-items:center;gap:8px;}
+.edit-card-module-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.edit-card-module-name{font-size:12px;font-weight:600;color:var(--t2);}
+.edit-card-actions{display:flex;align-items:center;gap:6px;}
+.ec-btn{background:none;border:none;cursor:pointer;color:var(--t3);padding:5px;border-radius:6px;display:flex;transition:all .12s;}
+.ec-btn:hover{background:var(--bg);color:var(--t1);}
+.ec-btn svg{width:15px;height:15px;stroke:currentColor;}
+.ec-btn-del{background:none;border:1px solid #ffbdad;cursor:pointer;color:#de350b;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .12s;}
+.ec-btn-del:hover{background:#ffebe6;}
+.ec-btn-del svg{width:13px;height:13px;stroke:currentColor;}
+.edit-card-body{flex:1;overflow-y:auto;padding:20px 22px;}
+.edit-card-body::-webkit-scrollbar{width:4px;}
+.edit-card-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.ec-desc{
+  width:100%;background:transparent;border:none;outline:none;
+  font-family:inherit;font-size:15px;font-weight:600;color:var(--t1);
+  resize:none;line-height:1.55;min-height:56px;
+  border-bottom:2px solid transparent;transition:border-color .15s;
+  padding-bottom:8px;margin-bottom:16px;
 }
-.d-textarea:hover,.d-textarea:focus{border-color:var(--bd2);background:var(--bg);}
-.d-select{
-  width:100%;background:var(--white);
-  border:1px solid var(--bd);border-radius:var(--r);
-  padding:7px 10px;font-size:12px;
-  font-family:inherit;color:var(--t1);outline:none;
-  transition:border-color .12s;cursor:pointer;
+.ec-desc:focus{border-bottom-color:#0052cc;}
+.ec-stamp{font-size:11px;color:var(--t3);margin-bottom:18px;display:flex;align-items:center;gap:6px;}
+.ec-stamp img,.ec-stamp-av{width:18px;height:18px;border-radius:50%;}
+.ec-stamp-av{display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;}
+.ec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.ec-field{display:flex;flex-direction:column;gap:5px;}
+.ec-field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);}
+.ec-select{
+  background:#f4f5f7;border:2px solid transparent;border-radius:8px;
+  padding:8px 10px;font-size:12px;font-family:inherit;color:var(--t1);
+  outline:none;cursor:pointer;transition:border-color .12s,background .12s;width:100%;
 }
-.d-select:focus{border-color:#0052cc;}
-.d-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.d-meta{font-size:10px;color:var(--t3);margin-bottom:16px;font-family:monospace;}
-.detail-foot{padding:12px 16px;border-top:1px solid var(--bd);flex-shrink:0;}
-.btn-del-full{
-  width:100%;padding:8px;border-radius:var(--r);
-  border:1px solid #ffbdad;background:#fff4f2;
-  color:#de350b;font-size:12px;font-weight:600;
-  cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;
+.ec-select:focus{background:#fff;border-color:#0052cc;}
+.edit-card-footer{padding:14px 22px;border-top:1px solid var(--bd);background:#fafbfc;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.ec-save-hint{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:5px;}
+.ec-saved{color:#00875a;font-weight:500;}
+
+/* activity undo button */
+.undo-btn{
+  margin-top:5px;
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:600;color:#0052cc;
+  background:#e6f0ff;border:none;border-radius:4px;
+  padding:2px 8px;cursor:pointer;font-family:inherit;
   transition:all .12s;
 }
-.btn-del-full:hover{background:#ffebe6;border-color:#de350b;}
-.btn-del-full svg{width:13px;height:13px;stroke:currentColor;}
+.undo-btn:hover{background:#cce0ff;}
+.undo-btn svg{width:10px;height:10px;stroke:currentColor;}
 
 /* STATUS BAR */
 .statusbar{
@@ -571,68 +584,71 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
 </div>
 
-<!-- DETAIL PANEL -->
-<div class="detail" id="detail-panel">
-  <div class="detail-inner">
-    <div class="detail-hd">
-      <span class="detail-hd-title">Edit task</span>
-      <button class="detail-close" onclick="closeDetail()">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+<!-- EDIT TASK MODAL -->
+<div class="edit-overlay" id="edit-overlay">
+  <div class="edit-card">
+    <div class="edit-card-header">
+      <div class="edit-card-module">
+        <div class="edit-card-module-dot" id="ec-mod-dot"></div>
+        <span class="edit-card-module-name" id="ec-mod-name"></span>
+      </div>
+      <div class="edit-card-actions">
+        <button class="ec-btn-del" onclick="openDel(activeId);closeDetail();">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          Delete
+        </button>
+        <button class="ec-btn" onclick="closeDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>
-    <div class="detail-body">
-      <div class="d-meta" id="d-meta"></div>
-      <div class="d-field">
-        <div class="d-label">Description</div>
-        <textarea class="d-textarea" id="d-desc" rows="4" oninput="patchActive('desc',this.value)" placeholder="Task description…"></textarea>
-      </div>
-      <div class="d-field">
-        <div class="d-label">Status</div>
-        <select class="d-select" id="d-status" onchange="patchActive('status',this.value)">
-          <option value="Pending">Pending</option>
-          <option value="In Progress">In Progress</option>
-          <option value="DONE">Done</option>
-        </select>
-      </div>
-      <div class="d-row">
-        <div class="d-field">
-          <div class="d-label">Priority</div>
-          <select class="d-select" id="d-priority" onchange="patchActive('priority',this.value)">
+    <div class="edit-card-body">
+      <textarea class="ec-desc" id="d-desc" rows="3" oninput="patchActive('desc',this.value)" placeholder="Task description…"></textarea>
+      <div class="ec-stamp" id="ec-stamp"></div>
+      <div class="ec-grid">
+        <div class="ec-field">
+          <label>Status</label>
+          <select class="ec-select" id="d-status" onchange="patchActive('status',this.value)">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="DONE">Done</option>
+          </select>
+        </div>
+        <div class="ec-field">
+          <label>Priority</label>
+          <select class="ec-select" id="d-priority" onchange="patchActive('priority',this.value)">
             <option>High</option><option>Medium</option><option>Low</option>
           </select>
         </div>
-        <div class="d-field">
-          <div class="d-label">Type</div>
-          <select class="d-select" id="d-type" onchange="patchActive('type',this.value)">
+        <div class="ec-field">
+          <label>Type</label>
+          <select class="ec-select" id="d-type" onchange="patchActive('type',this.value)">
             <option>Bug Fix</option><option>Feature</option><option>UI Improvement</option>
             <option>Optimization</option><option>Integration</option><option>Policy / Logic</option>
             <option>QA / Testing</option><option>Cleanup</option><option>Other</option>
           </select>
         </div>
-      </div>
-      <div class="d-field">
-        <div class="d-label">Module</div>
-        <select class="d-select" id="d-module" onchange="patchActive('module',this.value)">
-          <option>Payment Gateway</option><option>Profile Creation</option><option>Profile Page</option>
-          <option>Account Settings</option><option>Job Feed / Search</option><option>Get Paid / Earnings</option>
-          <option>Contracts &amp; Tracking</option><option>Scheduling System</option><option>Messaging System</option>
-          <option>Landing Page</option><option>Legal Pages</option><option>Application Page</option>
-          <option>Signup Page</option><option>Notification System</option><option>Other</option>
-        </select>
-      </div>
-      <div class="d-field">
-        <div class="d-label">User role</div>
-        <select class="d-select" id="d-role" onchange="patchActive('role',this.value)">
-          <option>Shared (Global)</option><option>Freelancer</option>
-          <option>Client</option><option>Client / Visitor</option>
-        </select>
+        <div class="ec-field">
+          <label>User Role</label>
+          <select class="ec-select" id="d-role" onchange="patchActive('role',this.value)">
+            <option>Shared (Global)</option><option>Freelancer</option>
+            <option>Client</option><option>Client / Visitor</option>
+          </select>
+        </div>
+        <div class="ec-field" style="grid-column:1/-1">
+          <label>Module</label>
+          <select class="ec-select" id="d-module" onchange="patchActive('module',this.value)">
+            <option>Payment Gateway</option><option>Profile Creation</option><option>Profile Page</option>
+            <option>Account Settings</option><option>Job Feed / Search</option><option>Get Paid / Earnings</option>
+            <option>Contracts &amp; Tracking</option><option>Scheduling System</option><option>Messaging System</option>
+            <option>Landing Page</option><option>Legal Pages</option><option>Application Page</option>
+            <option>Signup Page</option><option>Notification System</option><option>Other</option>
+          </select>
+        </div>
       </div>
     </div>
-    <div class="detail-foot">
-      <button class="btn-del-full" onclick="openDel(activeId)">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-        Delete task
-      </button>
+    <div class="edit-card-footer">
+      <span class="ec-save-hint" id="ec-save-hint">Changes auto-save</span>
     </div>
   </div>
 </div>
@@ -780,11 +796,13 @@ auth.onAuthStateChanged(user=>{
 });
 
 // ── Activity logging ──
-function logAction(action, taskDesc){
+function logAction(action, taskDesc, prevData, fid){
   if(!currentUser)return;
   LOGS.add({
     action,
     taskDesc:(taskDesc||'').slice(0,80),
+    fid:fid||null,
+    prevData:prevData||null,
     user:{
       name:currentUser.displayName||currentUser.email,
       email:currentUser.email,
@@ -793,6 +811,22 @@ function logAction(action, taskDesc){
     ts:firebase.firestore.FieldValue.serverTimestamp(),
   });
   document.getElementById('activity-dot').style.display='inline-block';
+}
+
+async function undoLog(logId){
+  const snap=await LOGS.doc(logId).get();
+  if(!snap.exists)return;
+  const l=snap.data();
+  if(l.action==='added'&&l.fid){
+    deleteTaskFS(l.fid);
+  } else if(l.action==='deleted'&&l.prevData){
+    COL.add({...l.prevData,...userStamp()});
+    logAction('added (undo)',l.prevData.desc||'');
+  } else if((l.action==='edited'||l.action==='moved')&&l.fid&&l.prevData){
+    COL.doc(l.fid).update({...l.prevData,...userStamp()});
+    logAction('undone',l.taskDesc,null,l.fid);
+  }
+  await LOGS.doc(logId).update({undone:true});
 }
 
 // ── Activity panel ──
@@ -816,6 +850,13 @@ function toggleActivity(){
           :`<div class="activity-avatar-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||u.email||'?')}</div>`;
         const badgeCls={added:'ab-add',edited:'ab-edit',deleted:'ab-del',moved:'ab-move'}[l.action]||'ab-edit';
         const timeStr=l.ts?timeAgo(l.ts.toDate()):'-';
+        const canUndo=['added','edited','moved','deleted'].includes(l.action)&&!l.undone;
+        const undoHtml=canUndo
+          ?`<button class="undo-btn" onclick="undoLog('${d.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
+              Undo
+            </button>`
+          : (l.undone?'<span style="font-size:10px;color:var(--t3)">Undone</span>':'');
         return `<div class="activity-item">
           ${avatarHtml}
           <div class="activity-content">
@@ -825,6 +866,7 @@ function toggleActivity(){
               &nbsp;${esc((l.taskDesc||'').slice(0,50))}${(l.taskDesc||'').length>50?'…':''}
             </div>
             <div class="activity-time">${timeStr}</div>
+            ${undoHtml}
           </div>
         </div>`;
       }).join('');
@@ -948,22 +990,24 @@ function userStamp(){
     lastEditedAt:firebase.firestore.FieldValue.serverTimestamp(),
   };
 }
-function addTaskFS(fields){
+async function addTaskFS(fields){
   const order=tasks.length?Math.max(...tasks.map(t=>t.order??0))+1:0;
   const data={...fields,order,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
-  const ref=COL.add(data);
-  logAction('added',fields.desc);
+  const ref=await COL.add(data);
+  logAction('added',fields.desc,null,ref.id);
   return ref;
 }
 function updateTaskFS(fid,fields){
   const t=tasks.find(x=>x.fid===fid);
   const action=fields.status&&t&&fields.status!==t.status?'moved':'edited';
+  const prevData=t?{desc:t.desc,status:t.status,priority:t.priority,type:t.type,module:t.module,role:t.role}:null;
   COL.doc(fid).update({...fields,...userStamp()});
-  logAction(action,t?.desc);
+  logAction(action,t?.desc,prevData,fid);
 }
 function deleteTaskFS(fid){
   const t=tasks.find(x=>x.fid===fid);
-  logAction('deleted',t?.desc);
+  const prevData=t?{desc:t.desc,status:t.status,priority:t.priority,type:t.type,module:t.module,role:t.role,order:t.order}:null;
+  logAction('deleted',t?.desc,prevData,fid);
   COL.doc(fid).delete();
 }
 
@@ -1199,29 +1243,39 @@ function onDragStart(e,fid){dragId=fid;e.currentTarget.classList.add('dragging')
 function onDragEnd(e){e.currentTarget.classList.remove('dragging');dragId=null;}
 function onDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
 
-// ── Select / Detail ──
+// ── Select / Detail (centered modal) ──
 function selectTask(fid){
   playTick();
   activeId=fid;
   const t=tasks.find(x=>x.fid===fid);
   if(!t)return;
   populateDetail(t);
-  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('edit-overlay').classList.add('open');
   renderBoard();
 }
 function closeDetail(){
   playTick();
   activeId=null;
-  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('edit-overlay').classList.remove('open');
   renderBoard();
 }
 function populateDetail(t){
-  document.getElementById('d-meta').textContent=`${t.module} · ${t.role}`;
+  document.getElementById('ec-mod-dot').style.background=modColor(t.module);
+  document.getElementById('ec-mod-name').textContent=t.module;
   document.getElementById('d-desc').value=t.desc;
   ['status','priority','type','module','role'].forEach(k=>{
     const el=document.getElementById('d-'+k);
     if(el)el.value=t[k];
   });
+  const stamp=document.getElementById('ec-stamp');
+  if(t.lastEditedBy){
+    const u=t.lastEditedBy;
+    const av=u.photo
+      ?`<img class="ec-stamp-av" src="${esc(u.photo)}" alt=""/>`
+      :`<div class="ec-stamp-av" style="background:${strColor(u.name||'?')}">${initials(u.name||'?')}</div>`;
+    const when=t.lastEditedAt?timeAgo(t.lastEditedAt.toDate()):'';
+    stamp.innerHTML=`${av}&nbsp;Last edited by <strong>${esc(u.name||u.email||'')}</strong>${when?' · '+when:''}`;
+  } else { stamp.innerHTML=''; }
 }
 function patchActive(field,value){
   if(!activeId)return;
@@ -1272,6 +1326,7 @@ function onDrop(e,status){
 }
 document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
 document.getElementById('add-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAddModal();});
+document.getElementById('edit-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail();});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeDel();closeAddModal();closeDetail();}
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search').focus();}
