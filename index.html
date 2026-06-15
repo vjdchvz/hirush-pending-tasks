@@ -1206,6 +1206,9 @@ function openAddModal(status){
   addModalStatus=status||'Pending';
   document.getElementById('am-desc').value='';
   document.getElementById('am-module').value='Messaging System';
+  document.getElementById('am-module').style.display='';
+  document.getElementById('am-module-custom').value='';
+  document.getElementById('am-module-custom-wrap').style.display='none';
   document.getElementById('am-priority').value='Medium';
   document.getElementById('am-type').value='Bug Fix';
   document.getElementById('am-role').value='Shared (Global)';
