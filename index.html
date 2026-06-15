@@ -1209,7 +1209,8 @@ function openComments(fid){
     list.innerHTML=snap.docs.map(d=>{
       const c=d.data(),u=c.user||{};
       const av=u.photo?`<img class="comment-av" src="${esc(u.photo)}" alt=""/>`:`<div class="comment-av-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||'?')}</div>`;
-      return `<div class="comment-item">${av}<div class="comment-body"><div class="comment-meta"><span class="comment-author">${esc(u.name||u.email||'')}</span><span class="comment-time">${c.ts?timeAgo(c.ts.toDate()):''}</span></div><div class="comment-text">${esc(c.text)}</div></div></div>`;
+      const commentHtml=esc(c.text).replace(/https?:\/\/[^\s<>"]+/g,url=>`<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--brand);word-break:break-all;">${url}</a>`);
+      return `<div class="comment-item">${av}<div class="comment-body"><div class="comment-meta"><span class="comment-author">${esc(u.name||u.email||'')}</span><span class="comment-time">${c.ts?timeAgo(c.ts.toDate()):''}</span></div><div class="comment-text">${commentHtml}</div></div></div>`;
     }).join('');
   });
 }
