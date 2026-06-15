@@ -55,7 +55,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   display:flex;align-items:center;
   background:var(--topbar);
   padding:0 16px;gap:12px;
-  flex-shrink:0;z-index:10;
+  flex-shrink:0;
+  position:relative;z-index:50;
 }
 .brand{display:flex;align-items:center;gap:8px;margin-right:8px;}
 .brand-dot{width:28px;height:28px;background:#0052cc;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -143,7 +144,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .filter-chip .x{color:var(--t3);font-size:14px;line-height:1;margin-left:2px;}
 
 /* BOARD COLUMNS */
-.board-columns{display:flex;gap:14px;padding:0 20px 20px;flex:1;overflow-x:auto;overflow-y:hidden;align-items:flex-start;}
+.board-columns{display:flex;gap:14px;padding:0 20px 20px;flex:1;overflow-x:auto;overflow-y:hidden;align-items:flex-start;position:relative;z-index:1;}
 .board-columns::-webkit-scrollbar{height:6px;}
 .board-columns::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
 
