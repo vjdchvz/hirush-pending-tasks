@@ -1283,10 +1283,25 @@ function populateDetail(t){
   document.getElementById('ec-mod-dot').style.background=modColor(t.module);
   document.getElementById('ec-mod-name').textContent=t.module;
   document.getElementById('d-desc').value=t.desc;
-  ['status','priority','type','module','role'].forEach(k=>{
+  ['status','priority','type','role'].forEach(k=>{
     const el=document.getElementById('d-'+k);
     if(el)el.value=t[k];
   });
+  // handle module: check if it's a known option or custom
+  const modSel=document.getElementById('d-module');
+  const modWrap=document.getElementById('d-module-custom-wrap');
+  const modInput=document.getElementById('d-module-custom');
+  const knownModules=[...modSel.options].map(o=>o.value);
+  if(knownModules.includes(t.module)){
+    modSel.value=t.module;
+    modSel.style.display='';
+    modWrap.style.display='none';
+    modInput.value='';
+  } else {
+    modSel.style.display='none';
+    modWrap.style.display='block';
+    modInput.value=t.module;
+  }
   const stamp=document.getElementById('ec-stamp');
   if(t.lastEditedBy){
     const u=t.lastEditedBy;
