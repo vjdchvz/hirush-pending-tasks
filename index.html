@@ -637,13 +637,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         </div>
         <div class="ec-field" style="grid-column:1/-1">
           <label>Module</label>
-          <select class="ec-select" id="d-module" onchange="patchActive('module',this.value)">
+          <select class="ec-select" id="d-module" onchange="onModuleChange(this,'d-module-custom')">
             <option>Payment Gateway</option><option>Profile Creation</option><option>Profile Page</option>
             <option>Account Settings</option><option>Job Feed / Search</option><option>Get Paid / Earnings</option>
             <option>Contracts &amp; Tracking</option><option>Scheduling System</option><option>Messaging System</option>
             <option>Landing Page</option><option>Legal Pages</option><option>Application Page</option>
             <option>Signup Page</option><option>Notification System</option><option>Other</option>
           </select>
+          <input class="ec-select" id="d-module-custom" type="text" placeholder="Type module name…" style="display:none;margin-top:6px;" oninput="patchActive('module',this.value)"/>
         </div>
       </div>
     </div>
@@ -690,13 +691,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <div class="am-row">
         <div class="am-field">
           <label for="am-module">Module</label>
-          <select class="am-select" id="am-module">
+          <select class="am-select" id="am-module" onchange="onModuleChange(this,'am-module-custom')">
             <option>Messaging System</option><option>Profile Page</option><option>Profile Creation</option>
             <option>Job Feed / Search</option><option>Scheduling System</option><option>Landing Page</option>
             <option>Get Paid / Earnings</option><option>Account Settings</option><option>Contracts &amp; Tracking</option>
             <option>Legal Pages</option><option>Application Page</option><option>Payment Gateway</option>
             <option>Signup Page</option><option>Notification System</option><option>Other</option>
           </select>
+          <input class="am-select" id="am-module-custom" type="text" placeholder="Type module name…" style="display:none;margin-top:6px;"/>
         </div>
         <div class="am-field">
           <label for="am-priority">Priority</label>
@@ -1222,9 +1224,13 @@ async function submitAddModal(){
   const desc=document.getElementById('am-desc').value.trim();
   if(!desc){document.getElementById('am-desc').focus();return;}
   closeAddModal();
+  const modSel=document.getElementById('am-module');
+  const modVal=modSel.value==='Other'
+    ?(document.getElementById('am-module-custom').value.trim()||'Other')
+    :modSel.value;
   const ref=await addTaskFS({
     desc,
-    module:document.getElementById('am-module').value,
+    module:modVal,
     priority:document.getElementById('am-priority').value,
     type:document.getElementById('am-type').value,
     role:document.getElementById('am-role').value,
@@ -1277,6 +1283,18 @@ function populateDetail(t){
     stamp.innerHTML=`${av}&nbsp;Last edited by <strong>${esc(u.name||u.email||'')}</strong>${when?' · '+when:''}`;
   } else { stamp.innerHTML=''; }
 }
+function onModuleChange(sel, customId){
+  const custom = document.getElementById(customId);
+  if(sel.value === 'Other'){
+    custom.style.display = 'block';
+    custom.focus();
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+    if(sel.id === 'd-module') patchActive('module', sel.value);
+  }
+}
+
 function patchActive(field,value){
   if(!activeId)return;
   clearTimeout(patchTimer);
