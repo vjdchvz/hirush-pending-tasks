@@ -542,9 +542,9 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 [data-theme="dark"] mark{background:#3d3000;color:#e3b341;}
 
 /* dark mode toggle button */
-.btn-dark{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 8px;cursor:pointer;color:rgba(255,255,255,.7);display:flex;align-items:center;transition:all .12s;}
+.btn-dark{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 8px;cursor:pointer;color:rgba(255,255,255,.7);display:flex;align-items:center;transition:all .12s;position:relative;z-index:10;flex-shrink:0;}
 .btn-dark:hover{background:rgba(255,255,255,.2);color:#fff;}
-.btn-dark svg{width:14px;height:14px;stroke:currentColor;}
+.btn-dark svg{width:14px;height:14px;stroke:currentColor;pointer-events:none;}
 
 /* export button */
 .btn-export{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .12s;}
