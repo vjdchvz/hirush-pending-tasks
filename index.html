@@ -733,7 +733,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
           <label>User Role</label>
           <select class="ec-select" id="d-role" onchange="patchActive('role',this.value)">
             <option>Shared (Global)</option><option>Freelancer</option>
-            <option>Client</option><option>Client / Visitor</option>
+            <option>Client</option><option>Visitor</option>
           </select>
         </div>
         <div class="ec-field">
@@ -846,7 +846,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
           <label for="am-role">User role</label>
           <select class="am-select" id="am-role">
             <option>Shared (Global)</option><option>Freelancer</option>
-            <option>Client</option><option>Client / Visitor</option>
+            <option>Client</option><option>Visitor</option>
           </select>
         </div>
       </div>
@@ -1062,8 +1062,8 @@ const SEED=[
   {desc:"Error message on client profile creation not aligned with Figma.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"Medium",order:1},
   {desc:"Client dashboard blocked by pending phone number verification.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"High",order:2},
   {desc:"Calendar booking system for clients to view slots and book calls.",module:"Scheduling System",role:"Client",type:"Feature",status:"Pending",priority:"High",order:3},
-  {desc:"Move the Curation Search Bar to the top hero section.",module:"Landing Page",role:"Client / Visitor",type:"UI Improvement",status:"DONE",priority:"Medium",order:4},
-  {desc:"Center-align the bottom banner title: 'Find Your Rushstar Now'.",module:"Landing Page",role:"Client / Visitor",type:"UI Improvement",status:"DONE",priority:"Low",order:5},
+  {desc:"Move the Curation Search Bar to the top hero section.",module:"Landing Page",role:"Visitor",type:"UI Improvement",status:"DONE",priority:"Medium",order:4},
+  {desc:"Center-align the bottom banner title: 'Find Your Rushstar Now'.",module:"Landing Page",role:"Visitor",type:"UI Improvement",status:"DONE",priority:"Low",order:5},
   {desc:"Fix Timezone dropdown no placeholder.",module:"Create Profile Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:6},
   {desc:"Fix profile-age layout alignment.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:7},
   {desc:"New Profile Displays Old Inputs in create profile.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:8},
@@ -1335,7 +1335,7 @@ function renderSidebar(){
 
   const roleCounts={};
   tasks.forEach(t=>{roleCounts[t.role]=(roleCounts[t.role]||0)+1;});
-  const roleIcons={'Client':'👤','Freelancer':'💼','Shared (Global)':'🌐','Client / Visitor':'👁'};
+  const roleIcons={'Client':'👤','Freelancer':'💼','Shared (Global)':'🌐','Visitor':'👁'};
   document.getElementById('role-list').innerHTML=Object.entries(roleCounts).sort((a,b)=>b[1]-a[1]).map(([r,c])=>`
     <div class="sb-item${roleFilter===r?' active':''}" data-role="${esc(r)}">
       <div class="sb-item-left">
