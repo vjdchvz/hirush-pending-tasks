@@ -644,7 +644,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <option>Landing Page</option><option>Legal Pages</option><option>Application Page</option>
             <option>Signup Page</option><option>Notification System</option><option>Other</option>
           </select>
-          <input class="ec-select" id="d-module-custom" type="text" placeholder="Type module name…" style="display:none;margin-top:6px;" oninput="patchActive('module',this.value)"/>
+          <div id="d-module-custom-wrap" style="display:none;margin-top:0;">
+            <input class="ec-select" id="d-module-custom" type="text" placeholder="Type module name…" oninput="patchActive('module',this.value)"/>
+            <span onclick="resetModuleSelect('d-module','d-module-custom')" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
+          </div>
         </div>
       </div>
     </div>
@@ -698,7 +701,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <option>Legal Pages</option><option>Application Page</option><option>Payment Gateway</option>
             <option>Signup Page</option><option>Notification System</option><option>Other</option>
           </select>
-          <input class="am-select" id="am-module-custom" type="text" placeholder="Type module name…" style="display:none;margin-top:6px;"/>
+          <div id="am-module-custom-wrap" style="display:none;margin-top:0;">
+            <input class="am-select" id="am-module-custom" type="text" placeholder="Type module name…"/>
+            <span onclick="resetModuleSelect('am-module','am-module-custom')" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
+          </div>
         </div>
         <div class="am-field">
           <label for="am-priority">Priority</label>
@@ -1284,15 +1290,25 @@ function populateDetail(t){
   } else { stamp.innerHTML=''; }
 }
 function onModuleChange(sel, customId){
-  const custom = document.getElementById(customId);
+  const wrap = document.getElementById(customId+'-wrap');
+  const input = document.getElementById(customId);
   if(sel.value === 'Other'){
-    custom.style.display = 'block';
-    custom.focus();
+    sel.style.display = 'none';
+    wrap.style.display = 'block';
+    input.focus();
   } else {
-    custom.style.display = 'none';
-    custom.value = '';
     if(sel.id === 'd-module') patchActive('module', sel.value);
   }
+}
+function resetModuleSelect(selId, customId){
+  const sel = document.getElementById(selId);
+  const wrap = document.getElementById(customId+'-wrap');
+  const input = document.getElementById(customId);
+  sel.value = '';
+  sel.style.display = '';
+  wrap.style.display = 'none';
+  input.value = '';
+  if(selId === 'd-module') patchActive('module', sel.value);
 }
 
 function patchActive(field,value){
