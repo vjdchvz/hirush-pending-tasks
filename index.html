@@ -646,7 +646,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
           </select>
           <div id="d-module-custom-wrap" style="display:none;margin-top:0;">
             <input class="ec-select" id="d-module-custom" type="text" placeholder="Type module name…" oninput="patchActive('module',this.value)"/>
-            <span onclick="resetModuleSelect('d-module','d-module-custom')" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
+            <span onclick="resetModuleSelect('d-module','d-module-custom',activeId)" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
           </div>
         </div>
       </div>
@@ -1326,15 +1326,20 @@ function onModuleChange(sel, customId){
     if(sel.id === 'd-module') patchActive('module', sel.value);
   }
 }
-function resetModuleSelect(selId, customId){
+function resetModuleSelect(selId, customId, fid){
   const sel = document.getElementById(selId);
   const wrap = document.getElementById(customId+'-wrap');
   const input = document.getElementById(customId);
-  sel.value = '';
+  // restore to saved module value if available, else first option
+  const savedModule = fid ? tasks.find(x=>x.fid===fid)?.module : null;
+  const knownModules=[...sel.options].map(o=>o.value);
+  const fallback = knownModules[0];
+  const restoreVal = savedModule && knownModules.includes(savedModule) ? savedModule : fallback;
+  sel.value = restoreVal;
   sel.style.display = '';
   wrap.style.display = 'none';
   input.value = '';
-  if(selId === 'd-module') patchActive('module', sel.value);
+  if(selId === 'd-module') patchActive('module', restoreVal);
 }
 
 function patchActive(field,value){
