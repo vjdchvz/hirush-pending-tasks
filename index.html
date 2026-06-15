@@ -550,39 +550,6 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 .btn-export{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .12s;}
 .btn-export:hover{background:rgba(255,255,255,.2);color:#fff;}
 .btn-export svg{width:13px;height:13px;stroke:currentColor;}
-
-/* card drag-insert indicator */
-.task-card.drag-target-above{border-top:2px solid #0052cc;}
-.task-card.drag-target-below{border-bottom:2px solid #0052cc;}
-
-/* notification bell */
-.btn-notif{position:relative;background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 8px;cursor:pointer;color:rgba(255,255,255,.7);display:flex;align-items:center;transition:all .12s;flex-shrink:0;}
-.btn-notif:hover{background:rgba(255,255,255,.2);color:#fff;}
-.btn-notif svg{width:14px;height:14px;stroke:currentColor;}
-.notif-badge{position:absolute;top:-3px;right:-3px;background:#de350b;color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:1px 4px;min-width:14px;text-align:center;}
-/* notification dropdown */
-.notif-panel{position:absolute;top:44px;right:0;width:320px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(9,30,66,.25);z-index:500;overflow:hidden;display:none;}
-.notif-panel.open{display:block;}
-.notif-panel-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd);}
-.notif-panel-hd span{font-size:12px;font-weight:700;color:var(--t1);}
-.notif-mark-all{font-size:11px;color:#0052cc;cursor:pointer;background:none;border:none;font-family:inherit;}
-.notif-item{padding:10px 16px;border-bottom:1px solid #f4f5f7;cursor:pointer;transition:background .1s;}
-.notif-item:hover{background:#f8f9fa;}
-.notif-item.unread{background:#e6f0ff;}
-.notif-item-text{font-size:12px;color:var(--t1);line-height:1.4;}
-.notif-item-text strong{color:#0052cc;}
-.notif-item-time{font-size:10px;color:var(--t3);margin-top:2px;}
-.notif-empty{text-align:center;padding:24px;font-size:12px;color:var(--t3);}
-[data-theme="dark"] .notif-panel{background:#1c2128;}
-[data-theme="dark"] .notif-item{border-color:var(--bd);}
-[data-theme="dark"] .notif-item:hover{background:#21262d;}
-[data-theme="dark"] .notif-item.unread{background:#1a2236;}
-
-/* invite teammate input */
-.invite-row{display:flex;gap:6px;padding:8px 12px 12px;}
-.invite-input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:5px 8px;font-size:11px;color:#fff;font-family:inherit;outline:none;}
-.invite-input::placeholder{color:rgba(255,255,255,.35);}
-.invite-btn{background:#0052cc;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -621,19 +588,6 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Activity <span class="activity-dot" id="activity-dot" style="display:none"></span>
     </button>
-    <div style="position:relative;">
-      <button class="btn-notif" onclick="toggleNotifPanel()" id="notif-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-        <span class="notif-badge" id="notif-badge" style="display:none">0</span>
-      </button>
-      <div class="notif-panel" id="notif-panel">
-        <div class="notif-panel-hd">
-          <span>Notifications</span>
-          <button class="notif-mark-all" onclick="markAllRead()">Mark all read</button>
-        </div>
-        <div id="notif-list"><div class="notif-empty">No notifications yet.</div></div>
-      </div>
-    </div>
     <button class="btn-export" onclick="exportCSV()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export
@@ -666,13 +620,6 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       </div>
       <span class="sb-count" id="sv-all">–</span>
     </div>
-    <div class="sb-item" data-view="overdue" onclick="setView('overdue',this)">
-      <div class="sb-item-left">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#de350b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span class="sb-item-label" style="color:#de350b;">Overdue</span>
-      </div>
-      <span class="sb-count" id="sv-overdue">–</span>
-    </div>
     <div class="sb-item" data-view="High" onclick="setView('High',this)">
       <div class="sb-item-left">
         <svg viewBox="0 0 24 24" fill="#de350b" stroke="none"><path d="M12 2L2 19h20L12 2z"/></svg>
@@ -693,17 +640,6 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
         <span class="sb-item-label">Low priority</span>
       </div>
       <span class="sb-count" id="sv-low">–</span>
-    </div>
-  </div>
-
-  <div class="sb-divider"></div>
-
-  <div class="sb-section">
-    <div class="sb-label">Teammates</div>
-    <div id="teammates-list"></div>
-    <div class="invite-row">
-      <input class="invite-input" id="invite-email" type="email" placeholder="Invite by email…" onkeydown="if(event.key==='Enter')inviteTeammate()"/>
-      <button class="invite-btn" onclick="inviteTeammate()">Invite</button>
     </div>
   </div>
 
@@ -984,15 +920,10 @@ auth.onAuthStateChanged(user=>{
     }
     document.getElementById('user-name-label').textContent=user.displayName||user.email;
     playSuccess();
-    upsertCurrentUser();
-    startUsersListener();
-    startNotifsListener();
   } else {
     loginScreen.classList.remove('hidden');
     userPill.style.display='none';
     signoutBtn.style.display='none';
-    if(notifsUnsub){notifsUnsub();notifsUnsub=null;}
-    if(usersUnsub){usersUnsub();usersUnsub=null;}
   }
 });
 
@@ -1166,125 +1097,6 @@ let patchTimer=null;
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ── Users collection ──
-const USERS = db.collection('users');
-let usersUnsub = null;
-let teamUsers = [];
-
-function startUsersListener(){
-  if(usersUnsub) return;
-  usersUnsub = USERS.orderBy('name').onSnapshot(snap=>{
-    teamUsers = snap.docs.map(d=>({...d.data(), uid: d.id}));
-    renderTeammates();
-    if(activeId){
-      const t = tasks.find(x=>x.fid===activeId);
-      if(t) renderAssigneeSelect(t);
-    }
-  });
-}
-
-function upsertCurrentUser(){
-  if(!currentUser) return;
-  USERS.doc(currentUser.email).set({
-    name: currentUser.displayName || currentUser.email,
-    email: currentUser.email,
-    photo: currentUser.photoURL || null,
-    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-  }, {merge: true});
-}
-
-function inviteTeammate(){
-  const input = document.getElementById('invite-email');
-  const email = input.value.trim().toLowerCase();
-  if(!email || !email.includes('@')){ showToast('Enter a valid email','warn'); return; }
-  USERS.doc(email).set({ email, name: email, photo: null, invited: true }, {merge: true});
-  input.value = '';
-  showToast('Invite sent to '+email,'success');
-}
-
-function renderTeammates(){
-  const list = document.getElementById('teammates-list');
-  if(!list) return;
-  list.innerHTML = teamUsers.map(u=>{
-    const av = u.photo
-      ? `<img style="width:20px;height:20px;border-radius:50%;object-fit:cover;" src="${esc(u.photo)}" alt=""/>`
-      : `<div style="width:20px;height:20px;border-radius:50%;background:${strColor(u.name||'?')};display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;">${initials(u.name||'?')}</div>`;
-    return `<div class="sb-item" style="pointer-events:none;">
-      <div class="sb-item-left">${av}<span class="sb-item-label">${esc(u.name)}</span></div>
-      ${u.invited&&!u.lastSeen?'<span style="font-size:9px;color:rgba(255,255,255,.35);">invited</span>':''}
-    </div>`;
-  }).join('');
-}
-
-// ── Notifications ──
-const NOTIFS = db.collection('notifications');
-let notifsUnsub = null;
-
-function startNotifsListener(){
-  if(!currentUser || notifsUnsub) return;
-  notifsUnsub = NOTIFS
-    .where('targetEmail','==', currentUser.email)
-    .limit(30)
-    .onSnapshot(snap=>{
-      const unread = snap.docs.filter(d=>!d.data().read).length;
-      const badge = document.getElementById('notif-badge');
-      badge.style.display = unread > 0 ? 'block' : 'none';
-      badge.textContent = unread > 9 ? '9+' : unread;
-      const list = document.getElementById('notif-list');
-      if(!snap.docs.length){ list.innerHTML='<div class="notif-empty">No notifications yet.</div>'; return; }
-      list.innerHTML = snap.docs.map(d=>{
-        const n = d.data();
-        return `<div class="notif-item${n.read?'':' unread'}" onclick="openNotif('${d.id}','${esc(n.taskId||'')}')">
-          <div class="notif-item-text"><strong>${esc(n.fromName||'Someone')}</strong> ${esc(n.message||'')}</div>
-          <div class="notif-item-time">${n.ts?timeAgo(n.ts.toDate()):''}</div>
-        </div>`;
-      }).join('');
-    });
-}
-
-function sendCommentNotif(taskId, taskDesc, commentText){
-  const t = tasks.find(x=>x.fid===taskId);
-  if(!t) return;
-  const targets = new Set();
-  if(t.assignee?.email && t.assignee.email !== currentUser.email) targets.add(t.assignee.email);
-  if(t.createdBy?.email && t.createdBy.email !== currentUser.email) targets.add(t.createdBy.email);
-  targets.forEach(email=>{
-    NOTIFS.add({
-      targetEmail: email,
-      fromName: currentUser.displayName || currentUser.email,
-      message: `commented on "${(taskDesc||'').slice(0,40)}": "${commentText.slice(0,40)}"`,
-      taskId,
-      read: false,
-      ts: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-  });
-}
-
-function toggleNotifPanel(){
-  const panel = document.getElementById('notif-panel');
-  panel.classList.toggle('open');
-}
-
-function openNotif(notifId, taskId){
-  NOTIFS.doc(notifId).update({read: true});
-  document.getElementById('notif-panel').classList.remove('open');
-  if(taskId) selectTask(taskId);
-}
-
-function markAllRead(){
-  NOTIFS.where('targetEmail','==', currentUser?.email||'').where('read','==',false)
-    .get().then(snap=>{ snap.docs.forEach(d=>d.ref.update({read:true})); });
-}
-
-// close notif panel on outside click
-document.addEventListener('click', e=>{
-  try{
-    const panel = document.getElementById('notif-panel');
-    const btn = document.getElementById('notif-btn');
-    if(panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.remove('open');
-  }catch(_){}
-});
-
 // ── Dark mode ──
 function toggleDark(){
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
@@ -1355,11 +1167,10 @@ function dueBadge(t){
 
 // ── Assignee helpers ──
 function knownUsers(){
-  if(teamUsers.length) return teamUsers;
-  // fallback before users collection loads
   const map={};
   tasks.forEach(t=>{
     if(t.lastEditedBy?.email) map[t.lastEditedBy.email]=t.lastEditedBy;
+    if(t.createdBy?.email) map[t.createdBy.email]=t.createdBy;
     if(t.assignee?.email) map[t.assignee.email]=t.assignee;
   });
   if(currentUser) map[currentUser.email]={name:currentUser.displayName||currentUser.email,email:currentUser.email,photo:currentUser.photoURL||null};
@@ -1415,13 +1226,11 @@ async function submitComment(){
   const text=input.value.trim();
   if(!text)return;
   input.value='';
-  const t=tasks.find(x=>x.fid===activeId);
   await COL.doc(activeId).collection('comments').add({
     text,
     user:{name:currentUser.displayName||currentUser.email,email:currentUser.email,photo:currentUser.photoURL||null},
     ts:firebase.firestore.FieldValue.serverTimestamp(),
   });
-  sendCommentNotif(activeId, t?.desc||'', text);
 }
 function commentKeydown(e){
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitComment();}
@@ -1486,14 +1295,10 @@ function deleteTaskFS(fid){
 // ── Filtering ──
 function getFiltered(){
   const q=document.getElementById('global-search').value.toLowerCase().trim();
-  const now=new Date(); now.setHours(0,0,0,0);
   return tasks.filter(t=>{
     if(moduleFilter&&t.module!==moduleFilter)return false;
     if(roleFilter&&t.role!==roleFilter)return false;
-    if(activeFilter==='overdue'){
-      if(t.status==='DONE')return false;
-      if(!t.dueDate||new Date(t.dueDate+'T00:00:00')>=now)return false;
-    } else if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
+    if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
       if(t.priority!==activeFilter)return false;
     }
     if(q&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q))return false;
@@ -1503,9 +1308,7 @@ function getFiltered(){
 
 // ── Sidebar ──
 function renderSidebar(){
-  const now=new Date(); now.setHours(0,0,0,0);
   document.getElementById('sv-all').textContent=tasks.length;
-  document.getElementById('sv-overdue').textContent=tasks.filter(t=>t.status!=='DONE'&&t.dueDate&&new Date(t.dueDate+'T00:00:00')<now).length;
   document.getElementById('sv-high').textContent=tasks.filter(t=>t.priority==='High').length;
   document.getElementById('sv-med').textContent=tasks.filter(t=>t.priority==='Medium').length;
   document.getElementById('sv-low').textContent=tasks.filter(t=>t.priority==='Low').length;
@@ -1625,9 +1428,7 @@ function cardHtml(t){
     onclick="selectTask('${esc(t.fid)}')"
     draggable="true"
     ondragstart="onDragStart(event,'${esc(t.fid)}')"
-    ondragend="onDragEnd(event)"
-    ondragover="onCardDragOver(event,'${esc(t.fid)}')"
-    ondrop="onCardDrop(event,'${esc(t.fid)}','${esc(t.status)}')">`
+    ondragend="onDragEnd(event)">
     <div class="card-top">
       <span class="card-module-badge">${highlight(t.module,q)}</span>
       <div class="card-prio">
@@ -1751,55 +1552,8 @@ function cancelQA(){}
 // ── Drag & drop ──
 let dragId=null;
 function onDragStart(e,fid){dragId=fid;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
-function onDragEnd(e){
-  e.currentTarget.classList.remove('dragging');
-  document.querySelectorAll('.drag-target-above,.drag-target-below').forEach(el=>{
-    el.classList.remove('drag-target-above','drag-target-below');
-  });
-  dragId=null;
-}
+function onDragEnd(e){e.currentTarget.classList.remove('dragging');dragId=null;}
 function onDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
-function onCardDragOver(e,fid){
-  e.preventDefault();e.stopPropagation();
-  if(!dragId||dragId===fid)return;
-  document.querySelectorAll('.drag-target-above,.drag-target-below').forEach(el=>{
-    el.classList.remove('drag-target-above','drag-target-below');
-  });
-  const card=e.currentTarget;
-  const rect=card.getBoundingClientRect();
-  const above=e.clientY<rect.top+rect.height/2;
-  card.classList.add(above?'drag-target-above':'drag-target-below');
-}
-function onCardDrop(e,targetFid,colStatus){
-  e.preventDefault();e.stopPropagation();
-  document.querySelectorAll('.drag-target-above,.drag-target-below').forEach(el=>{
-    el.classList.remove('drag-target-above','drag-target-below');
-  });
-  if(!dragId||dragId===targetFid)return;
-  const card=e.currentTarget;
-  const rect=card.getBoundingClientRect();
-  const above=e.clientY<rect.top+rect.height/2;
-  // get all tasks in this column sorted by order
-  const colTasks=tasks.filter(t=>t.status===colStatus).sort((a,b)=>(a.order??0)-(b.order??0));
-  const targetIdx=colTasks.findIndex(t=>t.fid===targetFid);
-  const draggedTask=tasks.find(t=>t.fid===dragId);
-  const insertIdx=above?targetIdx:targetIdx+1;
-  // build new order for all tasks in column
-  const withoutDragged=colTasks.filter(t=>t.fid!==dragId);
-  withoutDragged.splice(insertIdx,0,draggedTask);
-  // get global min order for this column to preserve relative positioning
-  const base=Math.min(...withoutDragged.map(t=>t.order??0),0);
-  const batch=db.batch();
-  withoutDragged.forEach((t,i)=>{
-    batch.update(COL.doc(t.fid),{order:base+i,...userStamp()});
-  });
-  if(draggedTask.status!==colStatus){
-    batch.update(COL.doc(dragId),{status:colStatus,...userStamp()});
-    logAction('moved',draggedTask.desc,{status:draggedTask.status},dragId);
-  }
-  batch.commit();
-  dragId=null;
-}
 
 // ── Select / Detail (centered modal) ──
 function selectTask(fid){
