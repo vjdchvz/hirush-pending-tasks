@@ -385,6 +385,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .user-name{font-size:12px;font-weight:500;color:rgba(255,255,255,.85);}
 .signout-btn{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;transition:all .12s;}
 .signout-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+.online-av-wrap{position:relative;display:inline-flex;}
+.online-av{width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid #1e2a3a;}
+.online-av-fb{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;border:2px solid #1e2a3a;}
+.online-dot{position:absolute;bottom:0;right:0;width:7px;height:7px;border-radius:50%;background:#36b37e;border:1.5px solid #1e2a3a;}
+.online-label{font-size:10px;color:rgba(255,255,255,.5);margin-right:4px;white-space:nowrap;}
 
 /* ACTIVITY PANEL */
 .activity-panel{width:0;min-width:0;background:#fff;border-left:1px solid var(--bd);overflow:hidden;transition:width .2s ease;flex-shrink:0;display:flex;flex-direction:column;}
@@ -603,6 +608,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       <div id="user-avatar-wrap"></div>
       <span class="user-name" id="user-name-label"></span>
     </div>
+    <div id="online-users" style="display:flex;align-items:center;gap:4px;"></div>
     <button class="signout-btn" id="signout-btn" style="display:none" onclick="signOut()">Sign out</button>
   </div>
 </div>
@@ -919,6 +925,7 @@ auth.onAuthStateChanged(user=>{
       wrap.innerHTML=`<div class="user-avatar-fallback">${initials}</div>`;
     }
     document.getElementById('user-name-label').textContent=user.displayName||user.email;
+    startPresence(user);
     playSuccess();
   } else {
     loginScreen.classList.remove('hidden');
@@ -926,6 +933,35 @@ auth.onAuthStateChanged(user=>{
     signoutBtn.style.display='none';
   }
 });
+
+// ── Presence ──
+const PRESENCE=db.collection('presence');
+let presenceInterval=null;
+
+function startPresence(user){
+  const ref=PRESENCE.doc(user.uid);
+  const data={name:user.displayName||user.email,email:user.email,photo:user.photoURL||null,lastSeen:firebase.firestore.FieldValue.serverTimestamp()};
+  ref.set(data);
+  presenceInterval=setInterval(()=>ref.set(data),30000);
+  window.addEventListener('beforeunload',()=>ref.update({lastSeen:firebase.firestore.FieldValue.serverTimestamp()}));
+  PRESENCE.onSnapshot(snap=>{
+    const now=Date.now();
+    const online=snap.docs.filter(d=>{
+      const ts=d.data().lastSeen;
+      return ts && (now - ts.toDate().getTime()) < 90000;
+    });
+    const wrap=document.getElementById('online-users');
+    if(!wrap)return;
+    if(online.length===0){wrap.innerHTML='';return;}
+    wrap.innerHTML='<span class="online-label">Online:</span>'+online.map(d=>{
+      const u=d.data();
+      const av=u.photo
+        ?`<img class="online-av" src="${esc(u.photo)}" title="${esc(u.name||u.email)}" alt="${esc(u.name||'')}"/>`
+        :`<div class="online-av-fb" style="background:${strColor(u.name||'?')}" title="${esc(u.name||u.email)}">${(u.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>`;
+      return `<div class="online-av-wrap">${av}<span class="online-dot"></span></div>`;
+    }).join('');
+  });
+}
 
 // ── Activity logging ──
 function logAction(action, taskDesc, prevData, fid){
