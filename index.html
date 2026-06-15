@@ -1224,7 +1224,7 @@ function startNotifsListener(){
   if(!currentUser || notifsUnsub) return;
   notifsUnsub = NOTIFS
     .where('targetEmail','==', currentUser.email)
-    .orderBy('ts','desc').limit(30)
+    .limit(30)
     .onSnapshot(snap=>{
       const unread = snap.docs.filter(d=>!d.data().read).length;
       const badge = document.getElementById('notif-badge');
@@ -1278,9 +1278,11 @@ function markAllRead(){
 
 // close notif panel on outside click
 document.addEventListener('click', e=>{
-  const panel = document.getElementById('notif-panel');
-  const btn = document.getElementById('notif-btn');
-  if(panel && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.remove('open');
+  try{
+    const panel = document.getElementById('notif-panel');
+    const btn = document.getElementById('notif-btn');
+    if(panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.remove('open');
+  }catch(_){}
 });
 
 // ── Dark mode ──
