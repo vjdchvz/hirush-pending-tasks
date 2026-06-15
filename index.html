@@ -342,6 +342,55 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .loading{display:flex;align-items:center;justify-content:center;flex:1;color:var(--t3);font-size:13px;gap:10px;}
 .spin{width:18px;height:18px;border:2px solid var(--bd);border-top-color:#0052cc;border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+/* ADD TASK MODAL */
+.add-modal-overlay{position:fixed;inset:0;background:rgba(9,30,66,.5);display:flex;align-items:center;justify-content:center;z-index:400;opacity:0;pointer-events:none;transition:opacity .18s;}
+.add-modal-overlay.open{opacity:1;pointer-events:all;}
+.add-modal{
+  background:#fff;border-radius:14px;width:480px;max-width:calc(100vw - 2rem);
+  box-shadow:0 20px 60px rgba(9,30,66,.3);
+  transform:translateY(16px) scale(.97);transition:transform .18s;
+  overflow:hidden;
+}
+.add-modal-overlay.open .add-modal{transform:translateY(0) scale(1);}
+.add-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 0;
+}
+.add-modal-title{font-size:15px;font-weight:700;color:var(--t1);}
+.add-modal-col-badge{
+  font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;
+  margin-left:8px;
+}
+.add-modal-col-badge.pending{background:#fff8e1;color:#7a5f00;}
+.add-modal-col-badge.inprog {background:#e6f0ff;color:#0052cc;}
+.add-modal-col-badge.done   {background:#e3fcef;color:#006644;}
+.add-modal-close{background:none;border:none;cursor:pointer;color:var(--t3);padding:4px;border-radius:4px;display:flex;transition:all .1s;}
+.add-modal-close:hover{background:var(--bg);color:var(--t1);}
+.add-modal-close svg{width:16px;height:16px;stroke:currentColor;}
+.add-modal-body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px;}
+.am-field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:5px;}
+.am-textarea{
+  width:100%;background:#f4f5f7;border:2px solid transparent;border-radius:8px;
+  padding:10px 12px;font-size:13px;font-family:inherit;color:var(--t1);
+  resize:none;min-height:80px;outline:none;line-height:1.6;transition:border-color .12s,background .12s;
+}
+.am-textarea:focus{background:#fff;border-color:#0052cc;}
+.am-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.am-select{
+  width:100%;background:#f4f5f7;border:2px solid transparent;border-radius:8px;
+  padding:8px 10px;font-size:12px;font-family:inherit;color:var(--t1);outline:none;cursor:pointer;
+  transition:border-color .12s,background .12s;
+}
+.am-select:focus{background:#fff;border-color:#0052cc;}
+.add-modal-footer{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  padding:14px 20px;border-top:1px solid var(--bd);background:#fafbfc;
+}
+.am-btn-cancel{padding:8px 18px;border-radius:8px;border:1px solid var(--bd2);background:transparent;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .12s;}
+.am-btn-cancel:hover{background:var(--bg);}
+.am-btn-submit{padding:8px 20px;border-radius:8px;background:#0052cc;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s;}
+.am-btn-submit:hover{background:#0065ff;}
 </style>
 </head>
 <body>
@@ -360,7 +409,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <input type="text" id="global-search" placeholder="Search tasks…" oninput="renderBoard()"/>
   </div>
   <div class="topbar-right">
-    <button class="btn-add-top" onclick="openQuickAdd('Pending')">
+    <button class="btn-add-top" onclick="openAddModal('Pending')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add task
     </button>
@@ -497,6 +546,66 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </div>
 
 </div><!-- /layout -->
+
+<!-- ADD TASK MODAL -->
+<div class="add-modal-overlay" id="add-overlay">
+  <div class="add-modal">
+    <div class="add-modal-header">
+      <div style="display:flex;align-items:center;gap:0;">
+        <span class="add-modal-title">Add task</span>
+        <span class="add-modal-col-badge" id="am-col-badge">Pending</span>
+      </div>
+      <button class="add-modal-close" onclick="closeAddModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="add-modal-body">
+      <div class="am-field">
+        <label for="am-desc">Description *</label>
+        <textarea class="am-textarea" id="am-desc" rows="3" placeholder="What needs to be done?" onkeydown="amKeydown(event)"></textarea>
+      </div>
+      <div class="am-row">
+        <div class="am-field">
+          <label for="am-module">Module</label>
+          <select class="am-select" id="am-module">
+            <option>Messaging System</option><option>Profile Page</option><option>Profile Creation</option>
+            <option>Job Feed / Search</option><option>Scheduling System</option><option>Landing Page</option>
+            <option>Get Paid / Earnings</option><option>Account Settings</option><option>Contracts &amp; Tracking</option>
+            <option>Legal Pages</option><option>Application Page</option><option>Payment Gateway</option>
+            <option>Signup Page</option><option>Notification System</option><option>Other</option>
+          </select>
+        </div>
+        <div class="am-field">
+          <label for="am-priority">Priority</label>
+          <select class="am-select" id="am-priority">
+            <option>High</option><option selected>Medium</option><option>Low</option>
+          </select>
+        </div>
+      </div>
+      <div class="am-row">
+        <div class="am-field">
+          <label for="am-type">Type</label>
+          <select class="am-select" id="am-type">
+            <option>Bug Fix</option><option>Feature</option><option>UI Improvement</option>
+            <option>Optimization</option><option>Integration</option><option>Policy / Logic</option>
+            <option>QA / Testing</option><option>Cleanup</option><option>Other</option>
+          </select>
+        </div>
+        <div class="am-field">
+          <label for="am-role">User role</label>
+          <select class="am-select" id="am-role">
+            <option>Shared (Global)</option><option>Freelancer</option>
+            <option>Client</option><option>Client / Visitor</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="add-modal-footer">
+      <button class="am-btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="am-btn-submit" onclick="submitAddModal()">Add task</button>
+    </div>
+  </div>
+</div>
 
 <!-- Delete confirm -->
 <div class="overlay" id="del-overlay">
@@ -650,13 +759,18 @@ function renderSidebar(){
   tasks.forEach(t=>{modCounts[t.module]=(modCounts[t.module]||0)+1;});
   const mods=Object.entries(modCounts).sort((a,b)=>b[1]-a[1]);
   document.getElementById('module-list').innerHTML=mods.map(([m,c])=>`
-    <div class="sb-item${moduleFilter===m?' active':''}" onclick="setModule(${JSON.stringify(m)})">
+    <div class="sb-item${moduleFilter===m?' active':''}" data-module="${esc(m)}">
       <div class="sb-item-left">
         <span class="sb-dot-m" style="background:${modColor(m)}"></span>
         <span class="sb-item-label">${esc(m)}</span>
       </div>
       <span class="sb-count">${c}</span>
     </div>`).join('');
+  // re-bind clicks via delegation (avoids JSON escaping issues)
+  document.getElementById('module-list').onclick=e=>{
+    const item=e.target.closest('[data-module]');
+    if(item){setModule(item.dataset.module);}
+  };
 }
 
 // ── Board ──
@@ -757,36 +871,94 @@ function quickAddHtml(status){
   </div>`;
 }
 
-function openQuickAdd(status){quickAddCol=status;renderBoard();}
-function cancelQA(){quickAddCol=null;renderBoard();}
-async function submitQA(status){
-  const ta=document.getElementById('qa-ta');
-  const v=ta?ta.value.trim():'';
-  if(!v)return;
-  quickAddCol=null;
-  const ref=await addTaskFS({desc:v,module:'Other',role:'Shared (Global)',type:'Bug Fix',priority:'Medium',status});
+// ── Sounds (Web Audio API) ──
+let AC=null;
+function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC;}
+function playTick(){
+  try{const ac=getAC(),o=ac.createOscillator(),g=ac.createGain();
+  o.connect(g);g.connect(ac.destination);
+  o.frequency.value=900;o.type='sine';
+  g.gain.setValueAtTime(0.06,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.07);
+  o.start();o.stop(ac.currentTime+0.07);}catch(e){}
+}
+function playSuccess(){
+  try{const ac=getAC();
+  [523,659,784].forEach((f,i)=>{
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.frequency.value=f;o.type='sine';
+    const t=ac.currentTime+i*0.1;
+    g.gain.setValueAtTime(0.12,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+    o.start(t);o.stop(t+0.22);
+  });}catch(e){}
+}
+function playDelete(){
+  try{const ac=getAC(),o=ac.createOscillator(),g=ac.createGain();
+  o.connect(g);g.connect(ac.destination);
+  o.type='sawtooth';
+  o.frequency.setValueAtTime(380,ac.currentTime);
+  o.frequency.exponentialRampToValueAtTime(80,ac.currentTime+0.22);
+  g.gain.setValueAtTime(0.1,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.22);
+  o.start();o.stop(ac.currentTime+0.22);}catch(e){}
+}
+
+// ── Add Modal ──
+let addModalStatus='Pending';
+function openAddModal(status){
+  addModalStatus=status||'Pending';
+  document.getElementById('am-desc').value='';
+  document.getElementById('am-module').value='Messaging System';
+  document.getElementById('am-priority').value='Medium';
+  document.getElementById('am-type').value='Bug Fix';
+  document.getElementById('am-role').value='Shared (Global)';
+  const badge=document.getElementById('am-col-badge');
+  const cls={Pending:'pending','In Progress':'inprog',DONE:'done'}[addModalStatus]||'pending';
+  const label={Pending:'Pending','In Progress':'In Progress',DONE:'Done'}[addModalStatus]||'Pending';
+  badge.className='add-modal-col-badge '+cls;
+  badge.textContent='→ '+label;
+  document.getElementById('add-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('am-desc').focus(),80);
+  playTick();
+}
+function closeAddModal(){
+  document.getElementById('add-overlay').classList.remove('open');
+  playTick();
+}
+function amKeydown(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitAddModal();}
+  if(e.key==='Escape'){closeAddModal();}
+}
+async function submitAddModal(){
+  const desc=document.getElementById('am-desc').value.trim();
+  if(!desc){document.getElementById('am-desc').focus();return;}
+  closeAddModal();
+  const ref=await addTaskFS({
+    desc,
+    module:document.getElementById('am-module').value,
+    priority:document.getElementById('am-priority').value,
+    type:document.getElementById('am-type').value,
+    role:document.getElementById('am-role').value,
+    status:addModalStatus,
+  });
+  playSuccess();
   selectTask(ref.id);
 }
-function handleQA(e,status){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitQA(status);}
-  if(e.key==='Escape'){cancelQA();}
-}
+
+function openQuickAdd(status){playTick();openAddModal(status);}
+function cancelQA(){}
 
 // ── Drag & drop ──
 let dragId=null;
 function onDragStart(e,fid){dragId=fid;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
 function onDragEnd(e){e.currentTarget.classList.remove('dragging');dragId=null;}
 function onDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
-function onDrop(e,status){
-  e.preventDefault();
-  if(!dragId)return;
-  const t=tasks.find(x=>x.fid===dragId);
-  if(t&&t.status!==status){updateTaskFS(dragId,{status});}
-  dragId=null;
-}
 
 // ── Select / Detail ──
 function selectTask(fid){
+  playTick();
   activeId=fid;
   const t=tasks.find(x=>x.fid===fid);
   if(!t)return;
@@ -795,6 +967,7 @@ function selectTask(fid){
   renderBoard();
 }
 function closeDetail(){
+  playTick();
   activeId=null;
   document.getElementById('detail-panel').classList.remove('open');
   renderBoard();
@@ -815,21 +988,22 @@ function patchActive(field,value){
 
 // ── Filters ──
 function setView(v,el){
+  playTick();
   activeFilter=v;moduleFilter=null;
   document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.remove('active'));
   if(el)el.classList.add('active');
   renderBoard();
 }
 function setModule(m){
+  playTick();
   moduleFilter=moduleFilter===m?null:m;
   activeFilter='all';
   document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view==='all'&&!moduleFilter));
-  document.getElementById('sv-all')&&document.querySelector('[data-view="all"]')?.classList.toggle('active',!moduleFilter);
   if(!moduleFilter)document.querySelector('[data-view="all"]')?.classList.add('active');
   renderBoard();renderSidebar();
 }
-function clearModule(){moduleFilter=null;document.querySelector('[data-view="all"]')?.classList.add('active');renderBoard();renderSidebar();}
-function clearPrio(){activeFilter='all';document.querySelector('[data-view="all"]')?.classList.add('active');document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view==='all'));renderBoard();}
+function clearModule(){playTick();moduleFilter=null;document.querySelector('[data-view="all"]')?.classList.add('active');renderBoard();renderSidebar();}
+function clearPrio(){playTick();activeFilter='all';document.querySelector('[data-view="all"]')?.classList.add('active');document.querySelectorAll('.sb-item[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view==='all'));renderBoard();}
 
 // ── Delete ──
 function openDel(fid){
@@ -843,11 +1017,20 @@ function confirmDel(){
   if(!delId)return;
   if(activeId===delId)closeDetail();
   deleteTaskFS(delId);
+  playDelete();
   closeDel();
 }
+function onDrop(e,status){
+  e.preventDefault();
+  if(!dragId)return;
+  const t=tasks.find(x=>x.fid===dragId);
+  if(t&&t.status!==status){updateTaskFS(dragId,{status});playSuccess();}
+  dragId=null;
+}
 document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
+document.getElementById('add-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAddModal();});
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeDel();if(quickAddCol){cancelQA();}else{closeDetail();}}
+  if(e.key==='Escape'){closeDel();closeAddModal();closeDetail();}
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search').focus();}
 });
 </script>
