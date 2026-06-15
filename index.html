@@ -770,7 +770,12 @@ let currentUser=null;
 
 function signInWithGoogle(){
   const provider=new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(e=>alert('Sign-in failed: '+e.message));
+  const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  if(isMobile){
+    auth.signInWithRedirect(provider).catch(e=>alert('Sign-in failed: '+e.message));
+  } else {
+    auth.signInWithPopup(provider).catch(e=>alert('Sign-in failed: '+e.message));
+  }
 }
 function signOut(){
   auth.signOut();
