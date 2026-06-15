@@ -471,6 +471,85 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .am-btn-cancel:hover{background:var(--bg);}
 .am-btn-submit{padding:8px 20px;border-radius:8px;background:#0052cc;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s;}
 .am-btn-submit:hover{background:#0065ff;}
+
+/* ── DUE DATE ── */
+.card-due{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:#f0f2f5;color:var(--t3);}
+.card-due.overdue{background:#ffebe6;color:#de350b;}
+.card-due.today{background:#fff8e1;color:#7a5f00;}
+.card-due.soon{background:#e3fcef;color:#006644;}
+.ec-date{background:#f4f5f7;border:2px solid transparent;border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;color:var(--t1);outline:none;width:100%;transition:border-color .12s,background .12s;}
+.ec-date:focus{background:#fff;border-color:#0052cc;}
+
+/* ── ASSIGNEE ── */
+.card-assignee{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--t2);font-weight:500;}
+.card-assignee-av{width:16px;height:16px;border-radius:50%;object-fit:cover;}
+.card-assignee-fb{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:#fff;}
+
+/* ── COMMENTS ── */
+.ec-comments{margin-top:20px;padding-top:16px;border-top:1px solid var(--bd);}
+.ec-comments-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:10px;}
+.comment-item{display:flex;gap:8px;margin-bottom:12px;}
+.comment-av{width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.comment-av-fb{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.comment-body{flex:1;}
+.comment-meta{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
+.comment-author{font-size:11px;font-weight:600;color:var(--t1);}
+.comment-time{font-size:10px;color:var(--t3);}
+.comment-text{font-size:12px;color:var(--t2);line-height:1.5;}
+.comment-input-row{display:flex;gap:8px;align-items:flex-end;margin-top:10px;}
+.comment-input{flex:1;background:#f4f5f7;border:2px solid transparent;border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;color:var(--t1);outline:none;resize:none;min-height:36px;max-height:100px;line-height:1.5;transition:border-color .12s,background .12s;}
+.comment-input:focus{background:#fff;border-color:#0052cc;}
+.comment-submit{padding:8px 14px;background:#0052cc;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.comment-submit:hover{background:#0065ff;}
+
+/* ── SEARCH HIGHLIGHT ── */
+mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
+
+/* ── TOAST ── */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{background:#172b4d;color:#fff;padding:11px 16px;border-radius:10px;font-size:12px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;animation:toastIn .2s ease;max-width:320px;pointer-events:all;}
+.toast.success{background:#006644;}
+.toast.info{background:#0052cc;}
+.toast.warn{background:#7a5f00;}
+@keyframes toastIn{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+/* ── DARK MODE ── */
+[data-theme="dark"]{
+  --bg:#0d1117;--white:#161b22;--bd:#30363d;--bd2:#484f58;
+  --t1:#e6edf3;--t2:#8b949e;--t3:#656d76;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.06);
+}
+[data-theme="dark"] body{background:var(--bg);}
+[data-theme="dark"] .task-card{background:#1c2128;}
+[data-theme="dark"] .filter-chip{background:#1c2128;border-color:var(--bd);}
+[data-theme="dark"] .edit-card,[data-theme="dark"] .add-modal,[data-theme="dark"] .dialog{background:#1c2128;color:var(--t1);}
+[data-theme="dark"] .edit-card-header,[data-theme="dark"] .edit-card-footer,[data-theme="dark"] .add-modal-footer{background:#161b22;border-color:var(--bd);}
+[data-theme="dark"] .ec-select,[data-theme="dark"] .am-select,[data-theme="dark"] .am-textarea,[data-theme="dark"] .ec-date,[data-theme="dark"] .comment-input,[data-theme="dark"] .ec-desc{background:#0d1117;color:var(--t1);border-color:transparent;}
+[data-theme="dark"] .ec-select:focus,[data-theme="dark"] .am-select:focus,[data-theme="dark"] .am-textarea:focus,[data-theme="dark"] .ec-date:focus,[data-theme="dark"] .comment-input:focus{background:#161b22;border-color:#388bfd;}
+[data-theme="dark"] .activity-panel,[data-theme="dark"] .activity-hd,[data-theme="dark"] .activity-item{background:#1c2128;border-color:var(--bd);}
+[data-theme="dark"] .col-header.pending{background:#272d1e;}
+[data-theme="dark"] .col-header.inprog{background:#1a2236;}
+[data-theme="dark"] .col-header.done{background:#1a2d24;}
+[data-theme="dark"] .add-another:hover{background:rgba(255,255,255,.06);}
+[data-theme="dark"] .empty-col{border-color:var(--bd);}
+[data-theme="dark"] .card-due{background:#21262d;color:var(--t3);}
+[data-theme="dark"] .card-due.overdue{background:#3d1a15;color:#ff7b72;}
+[data-theme="dark"] .card-due.today{background:#2d2208;color:#e3b341;}
+[data-theme="dark"] .card-due.soon{background:#12261e;color:#3fb950;}
+[data-theme="dark"] .quick-add-card{background:#1c2128;}
+[data-theme="dark"] .login-card{background:#1c2128;}
+[data-theme="dark"] .statusbar{background:#161b22;border-color:var(--bd);}
+[data-theme="dark"] mark{background:#3d3000;color:#e3b341;}
+
+/* dark mode toggle button */
+.btn-dark{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 8px;cursor:pointer;color:rgba(255,255,255,.7);display:flex;align-items:center;transition:all .12s;}
+.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff;}
+.btn-dark svg{width:14px;height:14px;stroke:currentColor;}
+
+/* export button */
+.btn-export{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .12s;}
+.btn-export:hover{background:rgba(255,255,255,.2);color:#fff;}
+.btn-export svg{width:13px;height:13px;stroke:currentColor;}
 </style>
 </head>
 <body>
@@ -508,6 +587,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <button class="btn-activity" onclick="toggleActivity()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Activity <span class="activity-dot" id="activity-dot" style="display:none"></span>
+    </button>
+    <button class="btn-export" onclick="exportCSV()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button class="btn-dark" onclick="toggleDark()" id="dark-btn" title="Toggle dark mode">
+      <svg id="dark-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
     </button>
     <button class="btn-add-top" onclick="openAddModal('Pending')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -642,6 +728,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <option>Client</option><option>Client / Visitor</option>
           </select>
         </div>
+        <div class="ec-field">
+          <label>Due Date</label>
+          <input class="ec-date" type="date" id="d-dueDate" onchange="patchActive('dueDate',this.value)"/>
+        </div>
+        <div class="ec-field">
+          <label>Assignee</label>
+          <select class="ec-select" id="d-assignee" onchange="patchAssignee(this.value)">
+            <option value="">Unassigned</option>
+          </select>
+        </div>
         <div class="ec-field" style="grid-column:1/-1">
           <label>Module</label>
           <select class="ec-select" id="d-module" onchange="onModuleChange(this,'d-module-custom')">
@@ -655,6 +751,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <input class="ec-select" id="d-module-custom" type="text" placeholder="Type module name…" oninput="patchActive('module',this.value)"/>
             <span onclick="resetModuleSelect('d-module','d-module-custom',activeId)" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
           </div>
+        </div>
+      </div>
+      <!-- COMMENTS -->
+      <div class="ec-comments">
+        <div class="ec-comments-title">Comments</div>
+        <div id="ec-comment-list"></div>
+        <div class="comment-input-row">
+          <textarea class="comment-input" id="ec-comment-input" rows="1" placeholder="Add a comment…" onkeydown="commentKeydown(event)"></textarea>
+          <button class="comment-submit" onclick="submitComment()">Post</button>
         </div>
       </div>
     </div>
@@ -737,6 +842,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
           </select>
         </div>
       </div>
+      <div class="am-field">
+        <label for="am-dueDate">Due Date (optional)</label>
+        <input class="am-select" type="date" id="am-dueDate"/>
+      </div>
     </div>
     <div class="add-modal-footer">
       <button class="am-btn-cancel" onclick="closeAddModal()">Cancel</button>
@@ -744,6 +853,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     </div>
   </div>
 </div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
 
 <!-- Delete confirm -->
 <div class="overlay" id="del-overlay">
@@ -985,6 +1097,152 @@ let patchTimer=null;
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+// ── Dark mode ──
+function toggleDark(){
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  const next=dark?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('hirush-theme',next);
+  document.getElementById('dark-icon').innerHTML=next==='dark'
+    ?'<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    :'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+}
+(function(){
+  const t=localStorage.getItem('hirush-theme')||'light';
+  document.documentElement.setAttribute('data-theme',t);
+  if(t==='dark') setTimeout(()=>{
+    const el=document.getElementById('dark-icon');
+    if(el) el.innerHTML='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  },0);
+})();
+
+// ── Toast ──
+function showToast(msg,type='info',duration=3500){
+  const c=document.getElementById('toast-container');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=msg;
+  c.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(8px)';el.style.transition='all .2s';setTimeout(()=>el.remove(),200);},duration);
+}
+
+// ── Browser notifications ──
+function requestNotifPermission(){
+  if('Notification' in window&&Notification.permission==='default') Notification.requestPermission();
+}
+function sendNotif(title,body){
+  if('Notification' in window&&Notification.permission==='granted'){
+    new Notification(title,{body,icon:'https://vjdchvz.github.io/hirush-pending-tasks/favicon.ico'});
+  }
+  showToast(title+' — '+body,'info');
+}
+
+// ── Export CSV ──
+function exportCSV(){
+  const headers=['Description','Module','Status','Priority','Type','Role','Due Date','Assignee'];
+  const rows=tasks.map(t=>[
+    t.desc,t.module,t.status,t.priority,t.type,t.role,
+    t.dueDate||'',t.assignee?t.assignee.name:''
+  ].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='hirush-tasks-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  showToast('Exported '+tasks.length+' tasks to CSV','success');
+}
+
+// ── Due date helpers ──
+function dueBadge(t){
+  if(!t.dueDate)return '';
+  const due=new Date(t.dueDate+'T00:00:00');
+  const now=new Date(); now.setHours(0,0,0,0);
+  const diff=Math.round((due-now)/(86400000));
+  let cls='soon',label=due.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  if(diff<0){cls='overdue';label='Overdue';}
+  else if(diff===0){cls='today';label='Today';}
+  else if(diff===1){label='Tomorrow';}
+  return `<span class="card-due ${cls}">📅 ${label}</span>`;
+}
+
+// ── Assignee helpers ──
+function knownUsers(){
+  const map={};
+  tasks.forEach(t=>{
+    if(t.lastEditedBy?.email) map[t.lastEditedBy.email]=t.lastEditedBy;
+    if(t.createdBy?.email) map[t.createdBy.email]=t.createdBy;
+    if(t.assignee?.email) map[t.assignee.email]=t.assignee;
+  });
+  if(currentUser) map[currentUser.email]={name:currentUser.displayName||currentUser.email,email:currentUser.email,photo:currentUser.photoURL||null};
+  return Object.values(map);
+}
+function assigneeHtml(t){
+  if(!t.assignee) return '';
+  const u=t.assignee;
+  const av=u.photo
+    ?`<img class="card-assignee-av" src="${esc(u.photo)}" alt=""/>`
+    :`<div class="card-assignee-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||'?')}</div>`;
+  return `<span class="card-assignee">${av} ${esc((u.name||'').split(' ')[0])}</span>`;
+}
+function patchAssignee(email){
+  if(!activeId)return;
+  const users=knownUsers();
+  const u=users.find(x=>x.email===email)||null;
+  clearTimeout(patchTimer);
+  patchTimer=setTimeout(()=>updateTaskFS(activeId,{assignee:u}),280);
+}
+function renderAssigneeSelect(t){
+  const sel=document.getElementById('d-assignee');
+  if(!sel)return;
+  const users=knownUsers();
+  sel.innerHTML='<option value="">Unassigned</option>'+users.map(u=>`<option value="${esc(u.email)}">${esc(u.name||u.email)}</option>`).join('');
+  sel.value=t.assignee?.email||'';
+}
+
+// ── Comments ──
+let commentsUnsub=null;
+function openComments(fid){
+  if(commentsUnsub){commentsUnsub();commentsUnsub=null;}
+  document.getElementById('ec-comment-list').innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:8px 0">Loading…</div>';
+  commentsUnsub=COL.doc(fid).collection('comments').orderBy('ts','asc').onSnapshot(snap=>{
+    const list=document.getElementById('ec-comment-list');
+    if(!list)return;
+    if(!snap.docs.length){list.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:8px 0">No comments yet.</div>';return;}
+    list.innerHTML=snap.docs.map(d=>{
+      const c=d.data(),u=c.user||{};
+      const av=u.photo?`<img class="comment-av" src="${esc(u.photo)}" alt=""/>`:`<div class="comment-av-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||'?')}</div>`;
+      return `<div class="comment-item">${av}<div class="comment-body"><div class="comment-meta"><span class="comment-author">${esc(u.name||u.email||'')}</span><span class="comment-time">${c.ts?timeAgo(c.ts.toDate()):''}</span></div><div class="comment-text">${esc(c.text)}</div></div></div>`;
+    }).join('');
+  });
+}
+function closeComments(){
+  if(commentsUnsub){commentsUnsub();commentsUnsub=null;}
+  const list=document.getElementById('ec-comment-list');
+  if(list) list.innerHTML='';
+}
+async function submitComment(){
+  if(!activeId||!currentUser)return;
+  const input=document.getElementById('ec-comment-input');
+  const text=input.value.trim();
+  if(!text)return;
+  input.value='';
+  await COL.doc(activeId).collection('comments').add({
+    text,
+    user:{name:currentUser.displayName||currentUser.email,email:currentUser.email,photo:currentUser.photoURL||null},
+    ts:firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+function commentKeydown(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitComment();}
+}
+
+// ── Search highlight ──
+function highlight(text,q){
+  if(!q)return esc(text);
+  const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return esc(text).replace(re,'<mark>$1</mark>');
+}
+
 // ── Firebase listener ──
 COL.orderBy('order').onSnapshot(snap=>{
   if(snap.empty&&!seeded){
@@ -1021,9 +1279,11 @@ async function addTaskFS(fields){
 function updateTaskFS(fid,fields){
   const t=tasks.find(x=>x.fid===fid);
   const action=fields.status&&t&&fields.status!==t.status?'moved':'edited';
-  const prevData=t?{desc:t.desc,status:t.status,priority:t.priority,type:t.type,module:t.module,role:t.role}:null;
+  const prevData=t?{desc:t.desc,status:t.status,priority:t.priority,type:t.type,module:t.module,role:t.role,dueDate:t.dueDate||null,assignee:t.assignee||null}:null;
   COL.doc(fid).update({...fields,...userStamp()});
   logAction(action,t?.desc,prevData,fid);
+  if(fields.status==='DONE'&&t?.status!=='DONE') sendNotif('✅ Task done!',t?.desc?.slice(0,60)||'');
+  if(fields.assignee&&fields.assignee?.email!==t?.assignee?.email) sendNotif('👤 Assigned',`${fields.assignee.name} → "${(t?.desc||'').slice(0,40)}"`);
 }
 function deleteTaskFS(fid){
   const t=tasks.find(x=>x.fid===fid);
@@ -1163,13 +1423,14 @@ function cardHtml(t){
   const mc=modClass(t.module);
   const isDone=t.status==='DONE';
   const prioClass={High:'high',Medium:'medium',Low:'low'}[t.priority]||'low';
+  const q=document.getElementById('global-search').value.toLowerCase().trim();
   return `<div class="task-card ${mc}${t.fid===activeId?' drag-over':''}"
     onclick="selectTask('${esc(t.fid)}')"
     draggable="true"
     ondragstart="onDragStart(event,'${esc(t.fid)}')"
     ondragend="onDragEnd(event)">
     <div class="card-top">
-      <span class="card-module-badge">${esc(t.module)}</span>
+      <span class="card-module-badge">${highlight(t.module,q)}</span>
       <div class="card-prio">
         <span class="prio-dot ${prioClass}"></span>
         <button class="card-del" onclick="event.stopPropagation();openDel('${esc(t.fid)}')" aria-label="Delete">
@@ -1177,10 +1438,10 @@ function cardHtml(t){
         </button>
       </div>
     </div>
-    <div class="card-desc${isDone?' done-text':''}">${esc(t.desc)}</div>
+    <div class="card-desc${isDone?' done-text':''}">${highlight(t.desc,q)}</div>
     <div class="card-footer">
-      <span class="card-type">${esc(t.type)}</span>
-      <span class="card-role">${esc(t.role)}</span>
+      <span class="card-type">${highlight(t.type,q)}</span>
+      <span style="display:flex;align-items:center;gap:6px;">${assigneeHtml(t)}${dueBadge(t)}</span>
     </div>
     ${cardStamp(t)}
   </div>`;
@@ -1242,6 +1503,7 @@ function openAddModal(status){
   document.getElementById('am-priority').value='Medium';
   document.getElementById('am-type').value='Bug Fix';
   document.getElementById('am-role').value='Shared (Global)';
+  document.getElementById('am-dueDate').value='';
   const badge=document.getElementById('am-col-badge');
   const cls={Pending:'pending','In Progress':'inprog',DONE:'done'}[addModalStatus]||'pending';
   const label={Pending:'Pending','In Progress':'In Progress',DONE:'Done'}[addModalStatus]||'Pending';
@@ -1270,6 +1532,7 @@ async function submitAddModal(){
   const priority=document.getElementById('am-priority').value;
   const type=document.getElementById('am-type').value;
   const role=document.getElementById('am-role').value;
+  const dueDate=document.getElementById('am-dueDate').value||null;
   closeAddModal();
   const ref=await addTaskFS({
     desc,
@@ -1277,6 +1540,7 @@ async function submitAddModal(){
     priority,
     type,
     role,
+    dueDate,
     status:addModalStatus,
   });
   playSuccess();
@@ -1298,12 +1562,15 @@ function selectTask(fid){
   const t=tasks.find(x=>x.fid===fid);
   if(!t)return;
   populateDetail(t);
+  openComments(fid);
+  requestNotifPermission();
   document.getElementById('edit-overlay').classList.add('open');
   renderBoard();
 }
 function closeDetail(){
   playTick();
   activeId=null;
+  closeComments();
   document.getElementById('edit-overlay').classList.remove('open');
   renderBoard();
 }
@@ -1313,8 +1580,11 @@ function populateDetail(t){
   document.getElementById('d-desc').value=t.desc;
   ['status','priority','type','role'].forEach(k=>{
     const el=document.getElementById('d-'+k);
-    if(el)el.value=t[k];
+    if(el)el.value=t[k]||'';
   });
+  const dueEl=document.getElementById('d-dueDate');
+  if(dueEl) dueEl.value=t.dueDate||'';
+  renderAssigneeSelect(t);
   // handle module: check if it's a known option or custom
   const modSel=document.getElementById('d-module');
   const modWrap=document.getElementById('d-module-custom-wrap');
