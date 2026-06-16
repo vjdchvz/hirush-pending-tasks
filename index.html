@@ -373,6 +373,7 @@ body.mobile-mode #mobile-label{opacity:1;color:#fff;}
 /* LOGIN SCREEN */
 .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1e2a3a 0%,#0d1b2e 100%);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0;}
 .login-screen.hidden{display:none;}
+.login-screen.checking{visibility:hidden;}
 .login-card{background:#fff;border-radius:18px;padding:44px 48px;width:400px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.35);}
 .login-logo{width:52px;height:52px;background:#0052cc;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
 .login-logo svg{width:28px;height:28px;stroke:#fff;stroke-width:2.5;}
@@ -574,7 +575,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 <body>
 
 <!-- LOGIN SCREEN -->
-<div class="login-screen" id="login-screen">
+<div class="login-screen checking" id="login-screen">
   <div class="login-card">
     <div class="login-logo">
       <img src="stckovrbrd.png" alt="Stack OverBoard" style="width:64px;height:64px;border-radius:14px;object-fit:cover;"/>
@@ -934,6 +935,7 @@ function signOut(){
 auth.onAuthStateChanged(user=>{
   currentUser=user;
   const loginScreen=document.getElementById('login-screen');
+  loginScreen.classList.remove('checking');
   const userPill=document.getElementById('user-pill');
   const signoutBtn=document.getElementById('signout-btn');
   if(user){
