@@ -1020,24 +1020,28 @@ function toggleActivity(){
         const avatarHtml=u.photo
           ?`<img class="activity-avatar" src="${esc(u.photo)}" alt="${esc(u.name||'')}"/>`
           :`<div class="activity-avatar-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||u.email||'?')}</div>`;
-        const badgeCls={added:'ab-add',edited:'ab-edit',deleted:'ab-del',moved:'ab-move'}[l.action]||'ab-edit';
+        const isMoveAction=l.action&&l.action.startsWith('moved from');
+        const baseAction=isMoveAction?'moved':l.action;
+        const badgeCls={added:'ab-add',edited:'ab-edit',deleted:'ab-del',moved:'ab-move'}[baseAction]||'ab-edit';
         const timeStr=l.ts?timeAgo(l.ts.toDate()):'-';
-        const canUndo=['added','edited','moved','deleted'].includes(l.action)&&!l.undone;
+        const canUndo=['added','edited','moved','deleted'].includes(baseAction)&&!l.undone;
+        const moveDetail=isMoveAction?`<div style="font-size:10px;color:var(--t3);margin-top:2px;">${esc(l.action)}</div>`:'';
         const undoHtml=canUndo
           ?`<button class="undo-btn" onclick="undoLog('${d.id}')">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
               Undo
             </button>`
           : (l.undone?'<span style="font-size:10px;color:var(--t3)">Undone</span>':'');
-        const clickable=l.fid&&l.action!=='deleted';
+        const clickable=l.fid&&baseAction!=='deleted';
         return `<div class="activity-item${clickable?' activity-item--link':''}" ${clickable?`onclick="toggleActivity();selectTask('${l.fid}')"`:''}>
           ${avatarHtml}
           <div class="activity-content">
             <div class="activity-user">${esc(u.name||u.email||'Unknown')}</div>
             <div class="activity-action">
-              <span class="activity-badge ${badgeCls}">${esc(l.action)}</span>
+              <span class="activity-badge ${badgeCls}">${esc(baseAction)}</span>
               &nbsp;${esc((l.taskDesc||'').slice(0,50))}${(l.taskDesc||'').length>50?'…':''}
             </div>
+            ${moveDetail}
             <div class="activity-time">${timeStr}</div>
             ${undoHtml}
           </div>
