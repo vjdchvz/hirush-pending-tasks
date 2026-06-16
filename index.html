@@ -962,12 +962,16 @@ function startPresence(user){
   ref.set(data);
   presenceInterval=setInterval(()=>ref.set(data),30000);
   window.addEventListener('beforeunload',()=>ref.update({lastSeen:firebase.firestore.FieldValue.serverTimestamp()}));
+  let lastOnlineKey='';
   PRESENCE.onSnapshot(snap=>{
     const now=Date.now();
     const online=snap.docs.filter(d=>{
       const ts=d.data().lastSeen;
       return ts && (now - ts.toDate().getTime()) < 90000;
     });
+    const key=online.map(d=>d.id).sort().join(',');
+    if(key===lastOnlineKey)return;
+    lastOnlineKey=key;
     const wrap=document.getElementById('online-users');
     if(!wrap)return;
     if(online.length===0){wrap.innerHTML='';return;}
