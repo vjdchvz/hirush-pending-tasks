@@ -405,6 +405,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .activity-list::-webkit-scrollbar{width:3px;}
 .activity-list::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
 .activity-item{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #f4f5f7;}
+.activity-item--link{cursor:pointer;}
+.activity-item--link:hover{background:rgba(0,82,204,.06);}
 .activity-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
 .activity-avatar-fb{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
 .activity-content{flex:1;min-width:0;}
@@ -1027,7 +1029,8 @@ function toggleActivity(){
               Undo
             </button>`
           : (l.undone?'<span style="font-size:10px;color:var(--t3)">Undone</span>':'');
-        return `<div class="activity-item">
+        const clickable=l.fid&&l.action!=='deleted';
+        return `<div class="activity-item${clickable?' activity-item--link':''}" ${clickable?`onclick="toggleActivity();selectTask('${l.fid}')"`:''}>
           ${avatarHtml}
           <div class="activity-content">
             <div class="activity-user">${esc(u.name||u.email||'Unknown')}</div>
