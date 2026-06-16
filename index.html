@@ -150,6 +150,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 /* BOARD COLUMNS */
 .board-columns{display:flex;gap:14px;padding:0 20px 20px;flex:1;overflow-x:auto;overflow-y:hidden;align-items:flex-start;position:relative;z-index:1;}
+/* Mobile mode */
+body.mobile-mode .sidebar{display:none;}
+body.mobile-mode .board-columns{flex-direction:column;overflow-x:hidden;overflow-y:auto;align-items:stretch;padding:0 12px 20px;}
+body.mobile-mode .board-col{width:100%!important;min-width:unset!important;}
+body.mobile-mode .col-body{max-height:none;}
+body.mobile-mode #mobile-label{opacity:1;color:#fff;}
 .board-columns::-webkit-scrollbar{height:6px;}
 .board-columns::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
 
@@ -608,6 +614,9 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
     </button>
     <button class="btn-dark" onclick="toggleDark()" id="dark-btn">
       <span id="dark-label">🌙 Dark</span>
+    </button>
+    <button class="btn-dark" onclick="toggleMobile()" id="mobile-btn" title="Toggle mobile view">
+      <span id="mobile-label">📱 Mobile</span>
     </button>
     <button class="btn-add-top" onclick="openAddModal('Pending')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -1702,6 +1711,18 @@ function patchActive(field,value){
 }
 
 // ── Filters ──
+function toggleMobile(){
+  const on=document.body.classList.toggle('mobile-mode');
+  localStorage.setItem('sob-mobile',on?'1':'');
+  document.getElementById('mobile-label').textContent=on?'🖥️ Desktop':'📱 Mobile';
+}
+(function(){
+  if(localStorage.getItem('sob-mobile')){
+    document.body.classList.add('mobile-mode');
+    setTimeout(()=>{const el=document.getElementById('mobile-label');if(el)el.textContent='🖥️ Desktop';},0);
+  }
+})();
+
 function toggleSection(id){
   const sec=document.getElementById(id);
   const body=sec.querySelector('.sb-section-body');
