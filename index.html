@@ -1736,6 +1736,7 @@ function onDrop(e,status){
     const batch=db.batch();
     updates.forEach(u=>batch.update(COL.doc(u.fid),{order:u.order,status:u.status,...userStamp()}));
     batch.commit();
+    if(dragged.status!==status) logAction('moved',dragged.desc,{status:dragged.status},dragId);
     playSuccess();
   } else if(dragged.status!==status){
     const newOrder=colTasks.length;
