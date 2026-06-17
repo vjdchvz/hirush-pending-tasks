@@ -563,6 +563,25 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 
 /* export button */
 .btn-export{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .12s;}
+.eod-modal{background:var(--white);border-radius:16px;width:580px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.25);}
+.eod-header{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 22px 16px;border-bottom:1px solid var(--bd);}
+.eod-title{font-size:16px;font-weight:700;color:var(--t1);}
+.eod-date{font-size:11px;color:var(--t3);margin-top:2px;}
+.eod-body{overflow-y:auto;padding:16px 22px;flex:1;}
+.eod-loading{text-align:center;color:var(--t3);font-size:12px;padding:20px;}
+.eod-user-block{margin-bottom:20px;}
+.eod-user-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.eod-user-name{font-size:13px;font-weight:600;color:var(--t1);}
+.eod-user-count{font-size:10px;color:var(--t3);background:var(--bg);border-radius:10px;padding:1px 7px;}
+.eod-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f4f5f7;font-size:12px;}
+.eod-row:last-child{border-bottom:none;}
+.eod-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;}
+.eod-row-desc{color:var(--t2);flex:1;}
+.eod-row-detail{font-size:10px;color:var(--t3);}
+.eod-empty{text-align:center;color:var(--t3);font-size:12px;padding:30px 0;}
+[data-theme="dark"] .eod-modal{background:#1c2128;}
+[data-theme="dark"] .eod-row{border-color:var(--bd);}
+[data-theme="dark"] .eod-user-count{background:#0d1117;}
 .btn-export:hover{background:rgba(255,255,255,.2);color:#fff;}
 .btn-export svg{width:13px;height:13px;stroke:currentColor;}
 </style>
@@ -604,6 +623,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Activity <span class="activity-dot" id="activity-dot" style="display:none"></span>
     </button>
+    <button class="btn-export" onclick="openEOD()">📋 EOD</button>
     <button class="btn-export" onclick="exportCSV()">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export
@@ -881,6 +901,24 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 <div class="toast-container" id="toast-container"></div>
 
 <!-- Delete confirm -->
+<!-- EOD MODAL -->
+<div class="overlay" id="eod-overlay">
+  <div class="eod-modal">
+    <div class="eod-header">
+      <div>
+        <div class="eod-title">📋 End of Day Report</div>
+        <div class="eod-date" id="eod-date"></div>
+      </div>
+      <button class="ec-btn" onclick="closeEOD()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="eod-body" id="eod-body">
+      <div class="eod-loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="del-overlay">
   <div class="dialog">
     <h3>Delete this task?</h3>
@@ -1199,6 +1237,67 @@ function sendNotif(title,body){
 }
 
 // ── Export CSV ──
+// ── EOD Report ──
+function openEOD(){
+  document.getElementById('eod-overlay').classList.add('open');
+  const now=new Date();
+  document.getElementById('eod-date').textContent=now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('eod-body').innerHTML='<div class="eod-loading">Loading…</div>';
+  const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const end=new Date(start.getTime()+86400000);
+  LOGS.where('ts','>=',firebase.firestore.Timestamp.fromDate(start))
+      .where('ts','<',firebase.firestore.Timestamp.fromDate(end))
+      .orderBy('ts','asc')
+      .get()
+      .then(snap=>{
+        if(snap.empty){
+          document.getElementById('eod-body').innerHTML='<div class="eod-empty">No activity today yet.</div>';
+          return;
+        }
+        const byUser={};
+        snap.docs.forEach(d=>{
+          const l=d.data();
+          const u=l.user||{};
+          const key=u.email||u.name||'Unknown';
+          if(!byUser[key]) byUser[key]={user:u,logs:[]};
+          byUser[key].logs.push(l);
+        });
+        const badgeStyle={
+          'added':'background:#e3fcef;color:#006644',
+          'edited':'background:#e6f0ff;color:#0052cc',
+          'moved':'background:#fff8e1;color:#974f0c',
+          'deleted':'background:#ffebe6;color:#bf2600',
+        };
+        document.getElementById('eod-body').innerHTML=Object.values(byUser).map(({user:u,logs:ul})=>{
+          const av=u.photo
+            ?`<img src="${esc(u.photo)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" alt=""/>`
+            :`<div style="width:28px;height:28px;border-radius:50%;background:${strColor(u.name||'?')};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">${initials(u.name||'?')}</div>`;
+          const rows=ul.map(l=>{
+            const isMoveAction=l.action&&l.action.startsWith('moved from');
+            const baseAction=isMoveAction?'moved':l.action;
+            const style=badgeStyle[baseAction]||'background:#f4f5f7;color:#5e6c84';
+            const detail=isMoveAction?`<span class="eod-row-detail">(${esc(l.action)})</span>`:'';
+            const time=l.ts?l.ts.toDate().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'';
+            return `<div class="eod-row">
+              <span class="eod-badge" style="${style}">${esc(baseAction)}</span>
+              <span class="eod-row-desc">${esc((l.taskDesc||'').slice(0,60))}${detail}</span>
+              <span class="eod-row-detail">${time}</span>
+            </div>`;
+          }).join('');
+          return `<div class="eod-user-block">
+            <div class="eod-user-head">${av}<span class="eod-user-name">${esc(u.name||u.email||'Unknown')}</span><span class="eod-user-count">${ul.length} action${ul.length>1?'s':''}</span></div>
+            ${rows}
+          </div>`;
+        }).join('');
+      })
+      .catch(()=>{
+        document.getElementById('eod-body').innerHTML='<div class="eod-empty">Could not load activity. Firestore index may be needed.</div>';
+      });
+}
+function closeEOD(){
+  document.getElementById('eod-overlay').classList.remove('open');
+}
+
 function exportCSV(){
   const headers=['Description','Module','Status','Priority','Type','Role','Due Date','Assignee'];
   const rows=tasks.map(t=>[
@@ -1812,6 +1911,7 @@ COL.orderBy('order').onSnapshot(snap=>{
 document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
 document.getElementById('add-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAddModal();});
 document.getElementById('edit-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail();});
+document.getElementById('eod-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeEOD();});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeDel();closeAddModal();closeDetail();}
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search').focus();}
