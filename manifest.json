@@ -1,0 +1,19 @@
+{
+  "name": "Stack OverBoard",
+  "short_name": "OverBoard",
+  "description": "Hirush Task Board — real-time Kanban for your team",
+  "start_url": "/Stack-Overboard/",
+  "scope": "/Stack-Overboard/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e2a3a",
+  "theme_color": "#1e2a3a",
+  "icons": [
+    {
+      "src": "stckovrbrd.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
