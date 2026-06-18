@@ -571,6 +571,13 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 
 /* export button */
 .btn-export{background:rgba(255,255,255,.1);border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .12s;}
+.export-wrap{position:relative;}
+.export-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--white);border:1px solid var(--bd);border-radius:8px;box-shadow:0 8px 24px rgba(9,30,66,.15);z-index:200;min-width:160px;overflow:hidden;}
+.export-menu.open{display:block;}
+.export-item{padding:8px 14px;font-size:12px;color:var(--t1);cursor:pointer;white-space:nowrap;}
+.export-item:hover{background:var(--bg);}
+[data-theme="dark"] .export-menu{background:#1c2128;border-color:var(--bd);}
+[data-theme="dark"] .export-item:hover{background:#0d1117;}
 .eod-modal{background:var(--white);border-radius:16px;width:580px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.25);}
 .eod-header{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 22px 16px;border-bottom:1px solid var(--bd);}
 .eod-title{font-size:16px;font-weight:700;color:var(--t1);}
@@ -632,10 +639,18 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       Activity <span class="activity-dot" id="activity-dot" style="display:none"></span>
     </button>
     <button class="btn-export" onclick="openEOD()">📋 EOD</button>
-    <button class="btn-export" onclick="exportCSV()">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export
-    </button>
+    <div class="export-wrap" id="export-wrap">
+      <button class="btn-export" onclick="toggleExportMenu(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export ▾
+      </button>
+      <div class="export-menu" id="export-menu">
+        <div class="export-item" onclick="exportCSV();closeExportMenu()">📋 All tasks</div>
+        <div class="export-item" onclick="exportCSV('In Progress');closeExportMenu()">🔄 In Progress only</div>
+        <div class="export-item" onclick="exportCSV('Pending');closeExportMenu()">⏳ Pending only</div>
+        <div class="export-item" onclick="exportCSV('DONE');closeExportMenu()">✅ Done only</div>
+      </div>
+    </div>
     <button class="btn-dark" onclick="toggleDark()" id="dark-btn">
       <span id="dark-label">🌙 Dark</span>
     </button>
@@ -1244,6 +1259,11 @@ function sendNotif(title,body){
   showToast(title+' — '+body,'info');
 }
 
+// ── Export menu ──
+function toggleExportMenu(e){e.stopPropagation();document.getElementById('export-menu').classList.toggle('open');}
+function closeExportMenu(){document.getElementById('export-menu').classList.remove('open');}
+document.addEventListener('click',()=>closeExportMenu());
+
 // ── Export CSV ──
 // ── EOD Report ──
 function openEOD(){
@@ -1306,18 +1326,20 @@ function closeEOD(){
   document.getElementById('eod-overlay').classList.remove('open');
 }
 
-function exportCSV(){
+function exportCSV(filterStatus){
+  const source=filterStatus?tasks.filter(t=>t.status===filterStatus):tasks;
   const headers=['Description','Module','Status','Priority','Type','Role','Due Date','Assignee'];
-  const rows=tasks.map(t=>[
+  const rows=source.map(t=>[
     t.desc,t.module,t.status,t.priority,t.type,t.role,
     t.dueDate||'',t.assignee?t.assignee.name:''
   ].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(','));
   const csv=[headers.join(','),...rows].join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='hirush-tasks-'+new Date().toISOString().slice(0,10)+'.csv';
+  const label=filterStatus?filterStatus.toLowerCase().replace(' ','-'):'all';
+  a.download='sob-tasks-'+label+'-'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
-  showToast('Exported '+tasks.length+' tasks to CSV','success');
+  showToast('Exported '+source.length+' tasks to CSV','success');
 }
 
 // ── Due date helpers ──
