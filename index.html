@@ -66,6 +66,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   flex-shrink:0;
   position:relative;z-index:50;
 }
+.board-tabs{display:flex;align-items:center;background:#162032;border-bottom:1px solid rgba(255,255,255,.08);padding:0 16px;gap:4px;min-height:36px;flex-shrink:0;}
+.board-tab{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px 6px 0 0;font-size:12px;font-weight:500;color:rgba(255,255,255,.45);cursor:pointer;border:none;background:none;font-family:inherit;transition:all .15s;white-space:nowrap;position:relative;}
+.board-tab:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.06);}
+.board-tab.active{color:#fff;background:rgba(255,255,255,.1);border-bottom:2px solid #4a9eff;}
+.board-tab-del{opacity:0;font-size:12px;color:rgba(255,255,255,.4);background:none;border:none;cursor:pointer;padding:0 0 0 4px;line-height:1;}
+.board-tab:hover .board-tab-del{opacity:1;}
+.board-tab-del:hover{color:#ff5f5f;}
+.board-tab-add{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11px;color:rgba(255,255,255,.45);background:none;border:1px dashed rgba(255,255,255,.2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;margin-left:4px;}
+.board-tab-add:hover{color:#fff;border-color:rgba(255,255,255,.4);}
+.board-tab-add svg{width:11px;height:11px;}
 .brand{display:flex;align-items:center;gap:8px;margin-right:8px;}
 .brand-dot{width:28px;height:28px;background:#0052cc;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .brand-dot svg{width:14px;height:14px;stroke:#fff;stroke-width:2.5;}
@@ -678,6 +688,15 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
   </div>
 </div>
 
+<!-- BOARD TABS -->
+<div class="board-tabs" id="board-tabs">
+  <div id="board-tab-list" style="display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto;"></div>
+  <button class="board-tab-add" onclick="createBoard()" title="New project">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New project
+  </button>
+</div>
+
 <div class="layout">
 
 <!-- SIDEBAR -->
@@ -978,6 +997,61 @@ const db=firebase.firestore();
 const auth=firebase.auth();
 const COL=db.collection('tasks');
 const LOGS=db.collection('logs');
+const BOARDS=db.collection('boards');
+
+// ── Boards ──
+let activeBoardId='hirush';
+let allBoards=[];
+
+function renderBoardTabs(){
+  const list=document.getElementById('board-tab-list');
+  if(!list)return;
+  list.innerHTML=allBoards.map(b=>`
+    <button class="board-tab${activeBoardId===b.id?' active':''}" onclick="switchBoard('${b.id}')">
+      ${esc(b.name)}
+      ${b.id!=='hirush'?`<span class="board-tab-del" onclick="event.stopPropagation();deleteBoard('${b.id}','${esc(b.name)}')">✕</span>`:''}
+    </button>`).join('');
+}
+
+function switchBoard(boardId){
+  if(activeBoardId===boardId)return;
+  activeBoardId=boardId;
+  localStorage.setItem('sob-active-board',boardId);
+  activeFilter='all';moduleFilter=null;roleFilter=null;
+  renderBoardTabs();
+  renderBoard();
+  renderSidebar();
+}
+
+function createBoard(){
+  const name=prompt('Project name:');
+  if(!name||!name.trim())return;
+  BOARDS.add({name:name.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:{name:currentUser?.displayName,email:currentUser?.email}})
+    .then(ref=>{switchBoard(ref.id);});
+}
+
+function deleteBoard(id,name){
+  if(!confirm(`Delete project "${name}"? Tasks will also be deleted.`))return;
+  // delete all tasks for this board
+  COL.where('boardId','==',id).get().then(snap=>{
+    const batch=db.batch();
+    snap.docs.forEach(d=>batch.delete(d.ref));
+    batch.commit();
+  });
+  BOARDS.doc(id).delete();
+  if(activeBoardId===id) switchBoard('hirush');
+}
+
+function startBoards(){
+  // always ensure hirush board exists
+  BOARDS.doc('hirush').set({name:'Hirush',createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  BOARDS.orderBy('createdAt').onSnapshot(snap=>{
+    allBoards=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderBoardTabs();
+  });
+  const saved=localStorage.getItem('sob-active-board');
+  if(saved) activeBoardId=saved;
+}
 
 // ── Auth ──
 let currentUser=null;
@@ -1016,6 +1090,7 @@ auth.onAuthStateChanged(user=>{
     }
     document.getElementById('user-name-label').textContent=user.displayName||user.email;
     startPresence(user);
+    startBoards();
     playSuccess();
   } else {
     loginScreen.classList.remove('hidden');
@@ -1456,7 +1531,7 @@ function userStamp(){
 }
 async function addTaskFS(fields){
   const order=tasks.length?Math.max(...tasks.map(t=>t.order??0))+1:0;
-  const data={...fields,order,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
+  const data={...fields,order,boardId:activeBoardId,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
   const ref=await COL.add(data);
   logAction('added',fields.desc,null,ref.id);
   return ref;
@@ -1479,9 +1554,13 @@ function deleteTaskFS(fid){
 }
 
 // ── Filtering ──
+function getBoardTasks(){
+  return tasks.filter(t=>(t.boardId||'hirush')===activeBoardId);
+}
+
 function getFiltered(){
   const q=document.getElementById('global-search').value.toLowerCase().trim();
-  return tasks.filter(t=>{
+  return getBoardTasks().filter(t=>{
     if(moduleFilter&&t.module!==moduleFilter)return false;
     if(roleFilter&&t.role!==roleFilter)return false;
     if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
@@ -1494,13 +1573,14 @@ function getFiltered(){
 
 // ── Sidebar ──
 function renderSidebar(){
-  document.getElementById('sv-all').textContent=tasks.length;
-  document.getElementById('sv-high').textContent=tasks.filter(t=>t.priority==='High').length;
-  document.getElementById('sv-med').textContent=tasks.filter(t=>t.priority==='Medium').length;
-  document.getElementById('sv-low').textContent=tasks.filter(t=>t.priority==='Low').length;
+  const bt=getBoardTasks();
+  document.getElementById('sv-all').textContent=bt.length;
+  document.getElementById('sv-high').textContent=bt.filter(t=>t.priority==='High').length;
+  document.getElementById('sv-med').textContent=bt.filter(t=>t.priority==='Medium').length;
+  document.getElementById('sv-low').textContent=bt.filter(t=>t.priority==='Low').length;
 
   const roleCounts={};
-  tasks.forEach(t=>{roleCounts[t.role]=(roleCounts[t.role]||0)+1;});
+  bt.forEach(t=>{roleCounts[t.role]=(roleCounts[t.role]||0)+1;});
   const roleIcons={'Client':'👤','Freelancer':'💼','Shared (Global)':'🌐','Visitor':'👁'};
   document.getElementById('role-list').innerHTML=Object.entries(roleCounts).sort((a,b)=>b[1]-a[1]).map(([r,c])=>`
     <div class="sb-item${roleFilter===r?' active':''}" data-role="${esc(r)}">
@@ -1516,7 +1596,7 @@ function renderSidebar(){
   };
 
   const modCounts={};
-  tasks.forEach(t=>{modCounts[t.module]=(modCounts[t.module]||0)+1;});
+  bt.forEach(t=>{modCounts[t.module]=(modCounts[t.module]||0)+1;});
   const mods=Object.entries(modCounts).sort((a,b)=>b[1]-a[1]);
   document.getElementById('module-list').innerHTML=mods.map(([m,c])=>`
     <div class="sb-item${moduleFilter===m?' active':''}" data-module="${esc(m)}">
@@ -1542,10 +1622,11 @@ function renderBoard(){
   ];
 
   // status bar
-  document.getElementById('sb-p').textContent=tasks.filter(t=>t.status==='Pending').length;
-  document.getElementById('sb-i').textContent=tasks.filter(t=>t.status==='In Progress').length;
-  document.getElementById('sb-d').textContent=tasks.filter(t=>t.status==='DONE').length;
-  document.getElementById('sb-total').textContent=`${filtered.length} visible / ${tasks.length} total`;
+  const bt=getBoardTasks();
+  document.getElementById('sb-p').textContent=bt.filter(t=>t.status==='Pending').length;
+  document.getElementById('sb-i').textContent=bt.filter(t=>t.status==='In Progress').length;
+  document.getElementById('sb-d').textContent=bt.filter(t=>t.status==='DONE').length;
+  document.getElementById('sb-total').textContent=`${filtered.length} visible / ${bt.length} total`;
 
   // filter chips
   const chips=[];
