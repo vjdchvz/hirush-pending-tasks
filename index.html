@@ -1018,6 +1018,13 @@ function switchBoard(boardId){
   activeBoardId=boardId;
   localStorage.setItem('sob-active-board',boardId);
   activeFilter='all';moduleFilter=null;roleFilter=null;
+  // re-subscribe activity log for new board
+  if(logsUnsub){logsUnsub();logsUnsub=null;}
+  if(activityOpen){
+    logsUnsub=LOGS.where('boardId','==',activeBoardId).orderBy('ts','desc').limit(50).onSnapshot(snap=>{
+      renderActivityLog(snap);
+    });
+  }
   renderBoardTabs();
   renderBoard();
   renderSidebar();
@@ -1140,6 +1147,7 @@ function logAction(action, taskDesc, prevData, fid){
     taskDesc:(taskDesc||'').slice(0,80),
     fid:fid||null,
     prevData:prevData||null,
+    boardId:activeBoardId,
     user:{
       name:currentUser.displayName||currentUser.email,
       email:currentUser.email,
@@ -1176,44 +1184,46 @@ function toggleActivity(){
   document.getElementById('activity-panel').classList.toggle('open',activityOpen);
   document.getElementById('activity-dot').style.display='none';
   if(activityOpen&&!logsUnsub){
-    logsUnsub=LOGS.orderBy('ts','desc').limit(50).onSnapshot(snap=>{
-      const list=document.getElementById('activity-list');
-      if(!snap.docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
-      list.innerHTML=snap.docs.map(d=>{
-        const l=d.data();
-        const u=l.user||{};
-        const avatarHtml=u.photo
-          ?`<img class="activity-avatar" src="${esc(u.photo)}" alt="${esc(u.name||'')}"/>`
-          :`<div class="activity-avatar-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||u.email||'?')}</div>`;
-        const isMoveAction=l.action&&l.action.startsWith('moved from');
-        const baseAction=isMoveAction?'moved':l.action;
-        const badgeCls={added:'ab-add',edited:'ab-edit',deleted:'ab-del',moved:'ab-move'}[baseAction]||'ab-edit';
-        const timeStr=l.ts?timeAgo(l.ts.toDate()):'-';
-        const canUndo=['added','edited','moved','deleted'].includes(baseAction)&&!l.undone;
-        const moveDetail=isMoveAction?`<div style="font-size:10px;color:var(--t3);margin-top:2px;">${esc(l.action)}</div>`:'';
-        const undoHtml=canUndo
-          ?`<button class="undo-btn" onclick="undoLog('${d.id}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
-              Undo
-            </button>`
-          : (l.undone?'<span style="font-size:10px;color:var(--t3)">Undone</span>':'');
-        const clickable=l.fid&&baseAction!=='deleted';
-        return `<div class="activity-item${clickable?' activity-item--link':''}" ${clickable?`onclick="toggleActivity();selectTask('${l.fid}')"`:''}>
-          ${avatarHtml}
-          <div class="activity-content">
-            <div class="activity-user">${esc(u.name||u.email||'Unknown')}</div>
-            <div class="activity-action">
-              <span class="activity-badge ${badgeCls}">${esc(baseAction)}</span>
-              &nbsp;${esc((l.taskDesc||'').slice(0,50))}${(l.taskDesc||'').length>50?'…':''}
-            </div>
-            ${moveDetail}
-            <div class="activity-time">${timeStr}</div>
-            ${undoHtml}
-          </div>
-        </div>`;
-      }).join('');
-    });
+    logsUnsub=LOGS.where('boardId','==',activeBoardId).orderBy('ts','desc').limit(50).onSnapshot(renderActivityLog);
   }
+}
+
+function renderActivityLog(snap){
+  const list=document.getElementById('activity-list');
+  if(!snap.docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
+  list.innerHTML=snap.docs.map(d=>{
+    const l=d.data();
+    const u=l.user||{};
+    const avatarHtml=u.photo
+      ?`<img class="activity-avatar" src="${esc(u.photo)}" alt="${esc(u.name||'')}"/>`
+      :`<div class="activity-avatar-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||u.email||'?')}</div>`;
+    const isMoveAction=l.action&&l.action.startsWith('moved from');
+    const baseAction=isMoveAction?'moved':l.action;
+    const badgeCls={added:'ab-add',edited:'ab-edit',deleted:'ab-del',moved:'ab-move'}[baseAction]||'ab-edit';
+    const timeStr=l.ts?timeAgo(l.ts.toDate()):'-';
+    const canUndo=['added','edited','moved','deleted'].includes(baseAction)&&!l.undone;
+    const moveDetail=isMoveAction?`<div style="font-size:10px;color:var(--t3);margin-top:2px;">${esc(l.action)}</div>`:'';
+    const undoHtml=canUndo
+      ?`<button class="undo-btn" onclick="undoLog('${d.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
+          Undo
+        </button>`
+      : (l.undone?'<span style="font-size:10px;color:var(--t3)">Undone</span>':'');
+    const clickable=l.fid&&baseAction!=='deleted';
+    return `<div class="activity-item${clickable?' activity-item--link':''}" ${clickable?`onclick="toggleActivity();selectTask('${l.fid}')"`:''}>
+      ${avatarHtml}
+      <div class="activity-content">
+        <div class="activity-user">${esc(u.name||u.email||'Unknown')}</div>
+        <div class="activity-action">
+          <span class="activity-badge ${badgeCls}">${esc(baseAction)}</span>
+          &nbsp;${esc((l.taskDesc||'').slice(0,50))}${(l.taskDesc||'').length>50?'…':''}
+        </div>
+        ${moveDetail}
+        <div class="activity-time">${timeStr}</div>
+        ${undoHtml}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function strColor(name){
@@ -1359,7 +1369,8 @@ function openEOD(){
   document.getElementById('eod-body').innerHTML='<div class="eod-loading">Loading…</div>';
   const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const end=new Date(start.getTime()+86400000);
-  LOGS.where('ts','>=',firebase.firestore.Timestamp.fromDate(start))
+  LOGS.where('boardId','==',activeBoardId)
+      .where('ts','>=',firebase.firestore.Timestamp.fromDate(start))
       .where('ts','<',firebase.firestore.Timestamp.fromDate(end))
       .orderBy('ts','asc')
       .get()
