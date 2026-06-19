@@ -1074,8 +1074,10 @@ function switchBoard(boardId){
   // re-subscribe activity log for new board
   if(logsUnsub){logsUnsub();logsUnsub=null;}
   if(activityOpen){
-    logsUnsub=logsQuery().onSnapshot(snap=>{
-      renderActivityLog(snap);
+    const boardAtSubscribe=activeBoardId;
+    logsUnsub=logsQuery().onSnapshot(snap=>renderActivityLog(snap,boardAtSubscribe),err=>{
+      const list=document.getElementById('activity-list');
+      if(list) list.innerHTML=`<div class="activity-empty">Error loading logs: ${esc(err.message)}</div>`;
     });
   }
   renderBoardTabs();
@@ -1200,9 +1202,10 @@ function logsQuery(){
 }
 function logAction(action, taskDesc, prevData, fid){
   if(!currentUser)return;
+  const t=fid?tasks.find(x=>x.fid===fid):null;
   LOGS.add({
     action,
-    taskDesc:(taskDesc||'').slice(0,80),
+    taskDesc:(t?.title||taskDesc||'').slice(0,80),
     fid:fid||null,
     prevData:prevData||null,
     boardId:activeBoardId,
@@ -1242,19 +1245,25 @@ function toggleActivity(){
   document.getElementById('activity-panel').classList.toggle('open',activityOpen);
   document.getElementById('activity-dot').style.display='none';
   if(activityOpen&&!logsUnsub){
-    logsUnsub=logsQuery().onSnapshot(renderActivityLog);
+    const boardAtSubscribe=activeBoardId;
+    logsUnsub=logsQuery().onSnapshot(snap=>renderActivityLog(snap,boardAtSubscribe),err=>{
+      const list=document.getElementById('activity-list');
+      if(list) list.innerHTML=`<div class="activity-empty">Error loading logs: ${esc(err.message)}</div>`;
+    });
   }
 }
 
-function renderActivityLog(snap){
+function renderActivityLog(snap,boardId){
+  const board=boardId||activeBoardId;
   const list=document.getElementById('activity-list');
+  if(!list)return;
   // client-side board filter: hirush = no boardId or boardId==='hirush'; others must match exactly
   const docs=snap.docs.filter(d=>{
     const bid=d.data().boardId;
-    return activeBoardId==='hirush'?((!bid)||bid==='hirush'):(bid===activeBoardId);
+    return board==='hirush'?((!bid)||bid==='hirush'):(bid===board);
   });
   if(!docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
-  list.innerHTML=docs.map(d=>{
+  try{list.innerHTML=docs.map(d=>{
     const l=d.data();
     const u=l.user||{};
     const avatarHtml=u.photo
@@ -1286,7 +1295,7 @@ function renderActivityLog(snap){
         ${undoHtml}
       </div>
     </div>`;
-  }).join('');
+  }).join('');}catch(err){list.innerHTML=`<div class="activity-empty">Render error: ${esc(err.message)}</div>`;}
 }
 
 function strColor(name){
