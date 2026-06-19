@@ -1599,7 +1599,7 @@ function getFiltered(){
     if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
       if(t.priority!==activeFilter)return false;
     }
-    if(q&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q))return false;
+    if(q&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q)&&!(t.ticketId||'').toLowerCase().includes(q))return false;
     return true;
   });
 }
