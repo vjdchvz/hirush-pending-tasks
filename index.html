@@ -530,6 +530,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 /* ── COMMENTS ── */
 .ec-comments{margin-top:20px;padding-top:16px;border-top:1px solid var(--bd);}
+.subtask-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);}
+.subtask-check{width:14px;height:14px;cursor:pointer;accent-color:#0052cc;flex-shrink:0;}
+.subtask-label{flex:1;font-size:12px;color:var(--t1);line-height:1.4;}
+.subtask-done{color:var(--t3);text-decoration:line-through;}
+.subtask-del{background:none;border:none;cursor:pointer;color:var(--t3);font-size:11px;padding:2px 4px;border-radius:3px;opacity:0;transition:opacity .1s;}
+.subtask-item:hover .subtask-del{opacity:1;}
+.subtask-del:hover{background:var(--bg);color:#de350b;}
+.card-subtask-count{font-size:10px;color:var(--t3);background:var(--bg);padding:1px 6px;border-radius:4px;white-space:nowrap;}
+.card-subtask-count.done{color:#36b37e;background:#e3fcef;}
 .ec-comments-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:10px;}
 .comment-item{display:flex;gap:8px;margin-bottom:12px;}
 .comment-av{width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;}
@@ -860,6 +869,15 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
           </div>
         </div>
       </div>
+      <!-- SUB-TICKETS -->
+      <div class="ec-comments">
+        <div class="ec-comments-title">Sub-tickets</div>
+        <div id="ec-subtask-list"></div>
+        <div class="comment-input-row">
+          <input class="comment-input" id="ec-subtask-input" type="text" placeholder="Add sub-ticket… (Enter to save)" onkeydown="subtaskKeydown(event)" style="height:36px;resize:none;"/>
+          <button class="comment-submit" onclick="submitSubtask()">Add</button>
+        </div>
+      </div>
       <!-- COMMENTS -->
       <div class="ec-comments">
         <div class="ec-comments-title">Comments</div>
@@ -1043,7 +1061,7 @@ function switchBoard(boardId){
   // re-subscribe activity log for new board
   if(logsUnsub){logsUnsub();logsUnsub=null;}
   if(activityOpen){
-    logsUnsub=LOGS.where('boardId','==',activeBoardId).orderBy('ts','desc').limit(50).onSnapshot(snap=>{
+    logsUnsub=logsQuery().onSnapshot(snap=>{
       renderActivityLog(snap);
     });
   }
@@ -1162,6 +1180,11 @@ function startPresence(user){
 }
 
 // ── Activity logging ──
+// hirush board: old logs have no boardId, so don't filter by it
+function logsQuery(){
+  const q=LOGS.orderBy('ts','desc').limit(50);
+  return activeBoardId==='hirush'?q:LOGS.where('boardId','==',activeBoardId).orderBy('ts','desc').limit(50);
+}
 function logAction(action, taskDesc, prevData, fid){
   if(!currentUser)return;
   LOGS.add({
@@ -1206,7 +1229,7 @@ function toggleActivity(){
   document.getElementById('activity-panel').classList.toggle('open',activityOpen);
   document.getElementById('activity-dot').style.display='none';
   if(activityOpen&&!logsUnsub){
-    logsUnsub=LOGS.where('boardId','==',activeBoardId).orderBy('ts','desc').limit(50).onSnapshot(renderActivityLog);
+    logsUnsub=logsQuery().onSnapshot(renderActivityLog);
   }
 }
 
@@ -1391,7 +1414,7 @@ function openEOD(){
   document.getElementById('eod-body').innerHTML='<div class="eod-loading">Loading…</div>';
   const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const end=new Date(start.getTime()+86400000);
-  LOGS.where('boardId','==',activeBoardId)
+  (activeBoardId==='hirush'?LOGS:LOGS.where('boardId','==',activeBoardId))
       .where('ts','>=',firebase.firestore.Timestamp.fromDate(start))
       .where('ts','<',firebase.firestore.Timestamp.fromDate(end))
       .orderBy('ts','asc')
@@ -1546,6 +1569,60 @@ function commentKeydown(e){
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitComment();}
 }
 
+// ── Sub-tickets ──
+let subtasksUnsub=null;
+function openSubtasks(fid){
+  if(subtasksUnsub){subtasksUnsub();subtasksUnsub=null;}
+  const list=document.getElementById('ec-subtask-list');
+  if(list) list.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:8px 0">Loading…</div>';
+  subtasksUnsub=COL.doc(fid).collection('subtasks').orderBy('createdAt','asc').onSnapshot(snap=>{
+    if(!list)return;
+    if(!snap.docs.length){list.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:8px 0">No sub-tickets yet.</div>';return;}
+    list.innerHTML=snap.docs.map(d=>{
+      const s=d.data();
+      const done=s.done||false;
+      return `<div class="subtask-item">
+        <input type="checkbox" class="subtask-check" ${done?'checked':''} onchange="toggleSubtask('${fid}','${d.id}',this.checked)"/>
+        <span class="subtask-label${done?' subtask-done':''}">${esc(s.text)}</span>
+        <button class="subtask-del" onclick="deleteSubtask('${fid}','${d.id}')">✕</button>
+      </div>`;
+    }).join('');
+  });
+}
+function closeSubtasks(){
+  if(subtasksUnsub){subtasksUnsub();subtasksUnsub=null;}
+  const list=document.getElementById('ec-subtask-list');
+  if(list) list.innerHTML='';
+}
+async function submitSubtask(){
+  if(!activeId||!currentUser)return;
+  const input=document.getElementById('ec-subtask-input');
+  const text=input.value.trim();
+  if(!text)return;
+  input.value='';
+  await COL.doc(activeId).collection('subtasks').add({
+    text,
+    done:false,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    createdBy:{name:currentUser.displayName||currentUser.email,email:currentUser.email},
+  });
+  syncSubtaskCounts(activeId);
+}
+function subtaskKeydown(e){if(e.key==='Enter'){e.preventDefault();submitSubtask();}}
+function toggleSubtask(fid,sid,done){
+  COL.doc(fid).collection('subtasks').doc(sid).update({done}).then(()=>syncSubtaskCounts(fid));
+}
+function deleteSubtask(fid,sid){
+  COL.doc(fid).collection('subtasks').doc(sid).delete().then(()=>syncSubtaskCounts(fid));
+}
+function syncSubtaskCounts(fid){
+  COL.doc(fid).collection('subtasks').get().then(snap=>{
+    const total=snap.size;
+    const done=snap.docs.filter(d=>d.data().done).length;
+    COL.doc(fid).update({subtaskTotal:total,subtaskDone:done});
+  });
+}
+
 // ── Search highlight ──
 function highlight(text,q){
   if(!q)return esc(text);
@@ -1564,7 +1641,8 @@ function userStamp(){
 }
 async function addTaskFS(fields){
   const order=tasks.length?Math.max(...tasks.map(t=>t.order??0))+1:0;
-  const data={...fields,order,boardId:activeBoardId,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
+  const clean={};Object.entries(fields).forEach(([k,v])=>{if(v!==null&&v!==undefined&&v!=='')clean[k]=v;});
+  const data={...clean,order,boardId:activeBoardId,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
   const ref=await COL.add(data);
   logAction('added',fields.desc,null,ref.id);
   return ref;
@@ -1742,7 +1820,7 @@ function cardHtml(t){
     <div class="card-desc${isDone?' done-text':''}">${highlight(t.desc,q)}</div>
     <div class="card-footer">
       <span class="card-type">${highlight(t.type,q)}</span>
-      <span style="display:flex;align-items:center;gap:6px;">${assigneeHtml(t)}${dueBadge(t)}</span>
+      <span style="display:flex;align-items:center;gap:6px;">${t.subtaskTotal?`<span class="card-subtask-count${t.subtaskDone===t.subtaskTotal?' done':''}">☑ ${t.subtaskDone||0}/${t.subtaskTotal}</span>`:''}${assigneeHtml(t)}${dueBadge(t)}</span>
     </div>
     ${cardStamp(t)}
   </div>`;
@@ -1891,6 +1969,7 @@ function selectTask(fid){
   if(!t)return;
   populateDetail(t);
   openComments(fid);
+  openSubtasks(fid);
   requestNotifPermission();
   document.getElementById('edit-overlay').classList.add('open');
   renderBoard();
@@ -1899,6 +1978,7 @@ function closeDetail(){
   playTick();
   activeId=null;
   closeComments();
+  closeSubtasks();
   document.getElementById('edit-overlay').classList.remove('open');
   renderBoard();
 }
