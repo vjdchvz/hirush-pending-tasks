@@ -228,6 +228,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   padding:2px 7px;border-radius:4px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;
 }
+.card-ticket-id{font-size:9px;font-weight:700;color:#0052cc;background:#e6f0ff;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;letter-spacing:.03em;}
+[data-theme="dark"] .card-ticket-id{background:#1a2d4d;color:#4a9eff;}
 .card-prio{display:flex;align-items:center;gap:3px;flex-shrink:0;}
 .prio-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .prio-dot.high{background:#de350b;}
@@ -819,10 +821,19 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
         </div>
         <div class="ec-field">
           <label>User Role</label>
-          <select class="ec-select" id="d-role" onchange="patchActive('role',this.value)">
+          <select class="ec-select" id="d-role" onchange="onRoleChange(this,'d-role-custom')">
             <option>Shared (Global)</option><option>Freelancer</option>
             <option>Client</option><option>Visitor</option>
+            <option>None</option><option>Others</option>
           </select>
+          <div id="d-role-custom-wrap" style="display:none;margin-top:6px;">
+            <input class="ec-select" id="d-role-custom" type="text" placeholder="Specify role…" oninput="patchActive('role',this.value)"/>
+            <span onclick="resetRoleSelect('d-role','d-role-custom')" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
+          </div>
+        </div>
+        <div class="ec-field">
+          <label>Ticket ID</label>
+          <input class="ec-select" type="text" id="d-ticket" placeholder="e.g. HRS-001" onchange="patchActive('ticketId',this.value)"/>
         </div>
         <div class="ec-field">
           <label>Due Date</label>
@@ -932,15 +943,26 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
         </div>
         <div class="am-field">
           <label for="am-role">User role</label>
-          <select class="am-select" id="am-role">
+          <select class="am-select" id="am-role" onchange="onRoleChange(this,'am-role-custom')">
             <option>Shared (Global)</option><option>Freelancer</option>
             <option>Client</option><option>Visitor</option>
+            <option>None</option><option>Others</option>
           </select>
+          <div id="am-role-custom-wrap" style="display:none;margin-top:6px;">
+            <input class="am-select" id="am-role-custom" type="text" placeholder="Specify role…"/>
+            <span onclick="resetRoleSelect('am-role','am-role-custom')" style="font-size:10px;color:#0052cc;cursor:pointer;margin-top:4px;display:inline-block;">← back to list</span>
+          </div>
         </div>
       </div>
-      <div class="am-field">
-        <label for="am-dueDate">Due Date (optional)</label>
-        <input class="am-select" type="date" id="am-dueDate"/>
+      <div class="am-row">
+        <div class="am-field">
+          <label for="am-ticket">Ticket ID (optional)</label>
+          <input class="am-select" type="text" id="am-ticket" placeholder="e.g. HRS-001"/>
+        </div>
+        <div class="am-field">
+          <label for="am-dueDate">Due Date (optional)</label>
+          <input class="am-select" type="date" id="am-dueDate"/>
+        </div>
       </div>
     </div>
     <div class="add-modal-footer">
@@ -1709,7 +1731,7 @@ function cardHtml(t){
     ondragstart="onDragStart(event,'${esc(t.fid)}')"
     ondragend="onDragEnd(event)">
     <div class="card-top">
-      <span class="card-module-badge">${highlight(t.module,q)}</span>
+      <span class="card-module-badge">${highlight(t.module,q)}</span>${t.ticketId?`<span class="card-ticket-id">#${esc(t.ticketId)}</span>`:''}
       <div class="card-prio">
         <span class="prio-dot ${prioClass}"></span>
         <button class="card-del" onclick="event.stopPropagation();openDel('${esc(t.fid)}')" aria-label="Delete">
@@ -1782,6 +1804,10 @@ function openAddModal(status){
   document.getElementById('am-priority').value='Medium';
   document.getElementById('am-type').value='Bug Fix';
   document.getElementById('am-role').value='Shared (Global)';
+  document.getElementById('am-role').style.display='';
+  document.getElementById('am-role-custom-wrap').style.display='none';
+  document.getElementById('am-role-custom').value='';
+  document.getElementById('am-ticket').value='';
   document.getElementById('am-dueDate').value='';
   const badge=document.getElementById('am-col-badge');
   const cls={Pending:'pending','In Progress':'inprog',DONE:'done'}[addModalStatus]||'pending';
@@ -1810,8 +1836,12 @@ async function submitAddModal(){
     :document.getElementById('am-module').value;
   const priority=document.getElementById('am-priority').value;
   const type=document.getElementById('am-type').value;
-  const role=document.getElementById('am-role').value;
+  const roleWrap=document.getElementById('am-role-custom-wrap');
+  const role=roleWrap.style.display!=='none'
+    ?(document.getElementById('am-role-custom').value.trim()||'Others')
+    :document.getElementById('am-role').value;
   const dueDate=document.getElementById('am-dueDate').value||null;
+  const ticketId=document.getElementById('am-ticket').value.trim()||null;
   closeAddModal();
   const ref=await addTaskFS({
     desc,
@@ -1820,6 +1850,7 @@ async function submitAddModal(){
     type,
     role,
     dueDate,
+    ticketId,
     status:addModalStatus,
   });
   playSuccess();
@@ -1875,10 +1906,27 @@ function populateDetail(t){
   document.getElementById('ec-mod-dot').style.background=modColor(t.module);
   document.getElementById('ec-mod-name').textContent=t.module;
   document.getElementById('d-desc').value=t.desc;
-  ['status','priority','type','role'].forEach(k=>{
+  ['status','priority','type'].forEach(k=>{
     const el=document.getElementById('d-'+k);
     if(el)el.value=t[k]||'';
   });
+  // role: handle custom "Others" value
+  const roleSel=document.getElementById('d-role');
+  const roleWrap=document.getElementById('d-role-custom-wrap');
+  const roleInput=document.getElementById('d-role-custom');
+  const knownRoles=[...roleSel.options].map(o=>o.value);
+  if(t.role&&!knownRoles.includes(t.role)){
+    roleSel.style.display='none';
+    roleWrap.style.display='block';
+    roleInput.value=t.role;
+  } else {
+    roleSel.value=t.role||'Shared (Global)';
+    roleSel.style.display='';
+    roleWrap.style.display='none';
+    roleInput.value='';
+  }
+  const ticketEl=document.getElementById('d-ticket');
+  if(ticketEl) ticketEl.value=t.ticketId||'';
   const dueEl=document.getElementById('d-dueDate');
   if(dueEl) dueEl.value=t.dueDate||'';
   renderAssigneeSelect(t);
@@ -1906,6 +1954,29 @@ function populateDetail(t){
     const when=t.lastEditedAt?timeAgo(t.lastEditedAt.toDate()):'';
     stamp.innerHTML=`${av}&nbsp;Last edited by <strong>${esc(u.name||u.email||'')}</strong>${when?' · '+when:''}`;
   } else { stamp.innerHTML=''; }
+}
+function onRoleChange(sel, customId){
+  const wrap=document.getElementById(customId+'-wrap');
+  const input=document.getElementById(customId);
+  if(sel.value==='Others'){
+    sel.style.display='none';
+    wrap.style.display='block';
+    input.value='';
+    input.focus();
+  } else {
+    wrap.style.display='none';
+    if(sel.id==='d-role') patchActive('role',sel.value);
+  }
+}
+function resetRoleSelect(selId, customId){
+  const sel=document.getElementById(selId);
+  const wrap=document.getElementById(customId+'-wrap');
+  const input=document.getElementById(customId);
+  sel.value='Shared (Global)';
+  sel.style.display='';
+  wrap.style.display='none';
+  input.value='';
+  if(selId==='d-role') patchActive('role','Shared (Global)');
 }
 function onModuleChange(sel, customId){
   const wrap = document.getElementById(customId+'-wrap');
