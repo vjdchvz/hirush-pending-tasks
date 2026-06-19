@@ -1195,8 +1195,8 @@ function startPresence(user){
 // ── Activity logging ──
 // hirush board: old logs have no boardId, so don't filter by it
 function logsQuery(){
-  const q=LOGS.orderBy('ts','desc').limit(50);
-  return activeBoardId==='hirush'?q:LOGS.where('boardId','==',activeBoardId).orderBy('ts','desc').limit(50);
+  // composite index not guaranteed; filter client-side to avoid Firestore index errors
+  return LOGS.orderBy('ts','desc').limit(200);
 }
 function logAction(action, taskDesc, prevData, fid){
   if(!currentUser)return;
@@ -1248,8 +1248,13 @@ function toggleActivity(){
 
 function renderActivityLog(snap){
   const list=document.getElementById('activity-list');
-  if(!snap.docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
-  list.innerHTML=snap.docs.map(d=>{
+  // client-side board filter: hirush = no boardId or boardId==='hirush'; others must match exactly
+  const docs=snap.docs.filter(d=>{
+    const bid=d.data().boardId;
+    return activeBoardId==='hirush'?((!bid)||bid==='hirush'):(bid===activeBoardId);
+  });
+  if(!docs.length){list.innerHTML='<div class="activity-empty">No activity yet.</div>';return;}
+  list.innerHTML=docs.map(d=>{
     const l=d.data();
     const u=l.user||{};
     const avatarHtml=u.photo
@@ -1427,18 +1432,21 @@ function openEOD(){
   document.getElementById('eod-body').innerHTML='<div class="eod-loading">Loading…</div>';
   const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const end=new Date(start.getTime()+86400000);
-  (activeBoardId==='hirush'?LOGS:LOGS.where('boardId','==',activeBoardId))
-      .where('ts','>=',firebase.firestore.Timestamp.fromDate(start))
+  LOGS.where('ts','>=',firebase.firestore.Timestamp.fromDate(start))
       .where('ts','<',firebase.firestore.Timestamp.fromDate(end))
       .orderBy('ts','asc')
       .get()
       .then(snap=>{
-        if(snap.empty){
+        const allDocs=snap.docs.filter(d=>{
+          const bid=d.data().boardId;
+          return activeBoardId==='hirush'?((!bid)||bid==='hirush'):(bid===activeBoardId);
+        });
+        if(!allDocs.length){
           document.getElementById('eod-body').innerHTML='<div class="eod-empty">No activity today yet.</div>';
           return;
         }
         const byUser={};
-        snap.docs.forEach(d=>{
+        allDocs.forEach(d=>{
           const l=d.data();
           const u=l.user||{};
           const key=u.email||u.name||'Unknown';
