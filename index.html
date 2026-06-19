@@ -235,6 +235,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .prio-dot.high{background:#de350b;}
 .prio-dot.medium{background:#ff8b00;}
 .prio-dot.low{background:#97a0af;}
+.card-title{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px;line-height:1.3;}
 .card-desc{
   font-size:12px;font-weight:500;color:var(--t1);
   line-height:1.5;margin-bottom:8px;
@@ -323,6 +324,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .edit-card-body{flex:1;overflow-y:auto;padding:20px 22px;}
 .edit-card-body::-webkit-scrollbar{width:4px;}
 .edit-card-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.ec-title-input{width:100%;border:none;border-bottom:2px solid var(--bd);background:transparent;font-size:17px;font-weight:700;color:var(--t1);padding:4px 0 6px;outline:none;font-family:inherit;margin-bottom:8px;transition:border-color .15s;}
+.ec-title-input:focus{border-bottom-color:#0052cc;}
+.ec-title-input::placeholder{color:var(--t3);font-weight:400;}
+[data-theme="dark"] .ec-title-input{color:var(--t1);border-bottom-color:var(--bd);}
 .ec-desc{
   width:100%;background:transparent;border:none;outline:none;
   font-family:inherit;font-size:15px;font-weight:600;color:var(--t1);
@@ -807,6 +812,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       </div>
     </div>
     <div class="edit-card-body">
+      <input class="ec-title-input" id="d-title" type="text" oninput="patchActive('title',this.value)" placeholder="Short title…" autocomplete="off"/>
       <textarea class="ec-desc" id="d-desc" rows="3" oninput="patchActive('desc',this.value)" placeholder="Task description…"></textarea>
       <div class="ec-stamp" id="ec-stamp"></div>
       <div class="ec-grid">
@@ -928,8 +934,12 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
     </div>
     <div class="add-modal-body">
       <div class="am-field">
-        <label for="am-desc">Description *</label>
-        <textarea class="am-textarea" id="am-desc" rows="3" placeholder="What needs to be done?" onkeydown="amKeydown(event)"></textarea>
+        <label for="am-title">Title *</label>
+        <input class="am-select" type="text" id="am-title" placeholder="Short title…" onkeydown="amKeydown(event)" autocomplete="off"/>
+      </div>
+      <div class="am-field">
+        <label for="am-desc">Description</label>
+        <textarea class="am-textarea" id="am-desc" rows="2" placeholder="Details (optional)" onkeydown="amKeydown(event)"></textarea>
       </div>
       <div class="am-row">
         <div class="am-field">
@@ -1288,49 +1298,49 @@ function timeAgo(date){
 }
 
 const SEED=[
-  {desc:"Implement GCash Top-Up flow for buying HiRush Points.",module:"Payment Gateway",role:"Client",type:"Integration",status:"Pending",priority:"High",order:0},
-  {desc:"Error message on client profile creation not aligned with Figma.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"Medium",order:1},
-  {desc:"Client dashboard blocked by pending phone number verification.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"High",order:2},
-  {desc:"Calendar booking system for clients to view slots and book calls.",module:"Scheduling System",role:"Client",type:"Feature",status:"Pending",priority:"High",order:3},
-  {desc:"Move the Curation Search Bar to the top hero section.",module:"Landing Page",role:"Visitor",type:"UI Improvement",status:"DONE",priority:"Medium",order:4},
-  {desc:"Center-align the bottom banner title: 'Find Your Rushstar Now'.",module:"Landing Page",role:"Visitor",type:"UI Improvement",status:"DONE",priority:"Low",order:5},
-  {desc:"Fix Timezone dropdown no placeholder.",module:"Create Profile Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:6},
-  {desc:"Fix profile-age layout alignment.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:7},
-  {desc:"New Profile Displays Old Inputs in create profile.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:8},
-  {desc:"Reset profile picture to placeholder on new account creation if no image returns from API.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:9},
-  {desc:"Implement Certifications and Insights sections.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:10},
-  {desc:"Fix '3 dots' menu and 'Contact Me' actions (currently non-functional).",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:11},
-  {desc:"Implement/fix professional title display and editing.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium",order:12},
-  {desc:"Fix Tax Information section (saving and editing changes is broken).",module:"Account Settings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:13},
-  {desc:"Configure Billing & Payments infrastructure.",module:"Account Settings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:14},
-  {desc:"Fix job sorting filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:15},
-  {desc:"Fix Job Type and Number of Proposals filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:16},
-  {desc:"Fix Job Category filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:17},
-  {desc:"Activate main Search Bar for jobs.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:18},
-  {desc:"Fix action buttons on cards (Share, 3-dots dropdown, and Report features).",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:19},
-  {desc:"Implement earning snapshot breakdown and Tax Information calculations.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:20},
-  {desc:"Fix Payment Setting configuration and 'Get Paid' release triggers.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:21},
-  {desc:"Fix Earning Snapshot date adjustments and calendar viewing filters.",module:"Get Paid / Earnings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:22},
-  {desc:"Fix Active Contracts tracking and Work Diary sync features.",module:"Contracts & Tracking",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:23},
-  {desc:"Build an interactive Availability Calendar interface.",module:"Scheduling System",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:24},
-  {desc:"Enforce platform-wide minimum contract rate of $15.",module:"Contracts & Tracking",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High",order:25},
-  {desc:"Create and publish Terms & Conditions page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium",order:26},
-  {desc:"Create and publish Privacy Policy page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium",order:27},
-  {desc:"Build Team Messaging (Group Channels) functionality.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:28},
-  {desc:"Integrate Voice Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:29},
-  {desc:"Integrate Video Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:30},
-  {desc:"Add native Emoji Support picker in chat box.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:31},
-  {desc:"Replace the current Camera Icon with a Gallery Media Pick Icon.",module:"Messaging System",role:"Shared (Global)",type:"UI Improvement",status:"Pending",priority:"Medium",order:32},
-  {desc:"Optimize image upload pipeline to fix slow transfer speeds.",module:"Messaging System",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High",order:33},
-  {desc:"Make sent images expandable (lightbox view) when clicked.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:34},
-  {desc:"Add a local download action button when viewing images.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:35},
-  {desc:"Conduct comprehensive QA testing for MP4 file sharing compatibility.",module:"Messaging System",role:"Shared (Global)",type:"QA / Testing",status:"Pending",priority:"High",order:36},
-  {desc:"Completely remove or deprecate the legacy 'Meeting' feature block.",module:"Scheduling System",role:"Shared (Global)",type:"Cleanup",status:"Pending",priority:"Medium",order:37},
-  {desc:"Pricing Page (per Figma design).",module:"Landing Page",role:"Shared (Global)",type:"Feature",status:"DONE",priority:"Medium",order:38},
-  {desc:"Make a working Application page based on Figma design.",module:"Application Page",role:"Freelancer",type:"Feature",status:"DONE",priority:"High",order:39},
-  {desc:"Terms and Conditions / Privacy Policy not yet linked on signup page.",module:"Signup Page",role:"Shared (Global)",type:"Bug Fix",status:"In Progress",priority:"Medium",order:40},
-  {desc:"Clear All buttons not yet working on Application page.",module:"Application Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"Medium",order:41},
-  {desc:"Changes in Application should appear in notification bell.",module:"Notification System",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium",order:42},
+  {title:"GCash Top-Up Flow",desc:"Implement GCash Top-Up flow for buying HiRush Points.",module:"Payment Gateway",role:"Client",type:"Integration",status:"Pending",priority:"High",order:0},
+  {title:"Profile Creation Error Alignment",desc:"Error message on client profile creation not aligned with Figma.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"Medium",order:1},
+  {title:"Phone Verification Blocker",desc:"Client dashboard blocked by pending phone number verification.",module:"Profile Creation",role:"Client",type:"Bug Fix",status:"Pending",priority:"High",order:2},
+  {title:"Client Calendar Booking",desc:"Calendar booking system for clients to view slots and book calls.",module:"Scheduling System",role:"Client",type:"Feature",status:"Pending",priority:"High",order:3},
+  {title:"Search Bar Hero Placement",desc:"Move the Curation Search Bar to the top hero section.",module:"Landing Page",role:"Visitor",type:"UI Improvement",status:"DONE",priority:"Medium",order:4},
+  {title:"Banner Title Alignment",desc:"Center-align the bottom banner title: 'Find Your Rushstar Now'.",module:"Landing Page",role:"Visitor",type:"UI Improvement",status:"DONE",priority:"Low",order:5},
+  {title:"Timezone Dropdown Placeholder",desc:"Fix Timezone dropdown no placeholder.",module:"Create Profile Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:6},
+  {title:"Profile Age Layout Fix",desc:"Fix profile-age layout alignment.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:7},
+  {title:"Stale Inputs on New Profile",desc:"New Profile Displays Old Inputs in create profile.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:8},
+  {title:"Profile Picture Reset on New Account",desc:"Reset profile picture to placeholder on new account creation if no image returns from API.",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:9},
+  {title:"Certifications & Insights Sections",desc:"Implement Certifications and Insights sections.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:10},
+  {title:"Profile 3-Dots & Contact Me Fix",desc:"Fix '3 dots' menu and 'Contact Me' actions (currently non-functional).",module:"Profile Page",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:11},
+  {title:"Professional Title Display",desc:"Implement/fix professional title display and editing.",module:"Profile Page",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium",order:12},
+  {title:"Tax Information Save Fix",desc:"Fix Tax Information section (saving and editing changes is broken).",module:"Account Settings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:13},
+  {title:"Billing & Payments Setup",desc:"Configure Billing & Payments infrastructure.",module:"Account Settings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:14},
+  {title:"Job Sorting Filters Fix",desc:"Fix job sorting filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:15},
+  {title:"Job Type & Proposals Filter Fix",desc:"Fix Job Type and Number of Proposals filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:16},
+  {title:"Job Category Filter Fix",desc:"Fix Job Category filters.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"High",order:17},
+  {title:"Job Search Bar Activation",desc:"Activate main Search Bar for jobs.",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:18},
+  {title:"Job Card Action Buttons Fix",desc:"Fix action buttons on cards (Share, 3-dots dropdown, and Report features).",module:"Job Feed / Search",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:19},
+  {title:"Earnings Snapshot & Tax Calc",desc:"Implement earning snapshot breakdown and Tax Information calculations.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:20},
+  {title:"Payment Settings & Get Paid Triggers",desc:"Fix Payment Setting configuration and 'Get Paid' release triggers.",module:"Get Paid / Earnings",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:21},
+  {title:"Earnings Date & Calendar Filters",desc:"Fix Earning Snapshot date adjustments and calendar viewing filters.",module:"Get Paid / Earnings",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"Medium",order:22},
+  {title:"Active Contracts & Work Diary Sync",desc:"Fix Active Contracts tracking and Work Diary sync features.",module:"Contracts & Tracking",role:"Freelancer",type:"Bug Fix",status:"Pending",priority:"High",order:23},
+  {title:"Availability Calendar UI",desc:"Build an interactive Availability Calendar interface.",module:"Scheduling System",role:"Freelancer",type:"Feature",status:"Pending",priority:"High",order:24},
+  {title:"Minimum Contract Rate Enforcement",desc:"Enforce platform-wide minimum contract rate of $15.",module:"Contracts & Tracking",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High",order:25},
+  {title:"Terms & Conditions Page",desc:"Create and publish Terms & Conditions page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium",order:26},
+  {title:"Privacy Policy Page",desc:"Create and publish Privacy Policy page.",module:"Legal Pages",role:"Shared (Global)",type:"Policy / Logic",status:"DONE",priority:"Medium",order:27},
+  {title:"Group Messaging Channels",desc:"Build Team Messaging (Group Channels) functionality.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:28},
+  {title:"Voice Calling Integration",desc:"Integrate Voice Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:29},
+  {title:"Video Calling Integration",desc:"Integrate Video Calling architecture.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"High",order:30},
+  {title:"Chat Emoji Picker",desc:"Add native Emoji Support picker in chat box.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:31},
+  {title:"Camera → Gallery Icon Swap",desc:"Replace the current Camera Icon with a Gallery Media Pick Icon.",module:"Messaging System",role:"Shared (Global)",type:"UI Improvement",status:"Pending",priority:"Medium",order:32},
+  {title:"Image Upload Speed Optimization",desc:"Optimize image upload pipeline to fix slow transfer speeds.",module:"Messaging System",role:"Shared (Global)",type:"Optimization",status:"Pending",priority:"High",order:33},
+  {title:"Image Lightbox View",desc:"Make sent images expandable (lightbox view) when clicked.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:34},
+  {title:"Image Download Button",desc:"Add a local download action button when viewing images.",module:"Messaging System",role:"Shared (Global)",type:"Feature",status:"Pending",priority:"Medium",order:35},
+  {title:"MP4 Sharing QA",desc:"Conduct comprehensive QA testing for MP4 file sharing compatibility.",module:"Messaging System",role:"Shared (Global)",type:"QA / Testing",status:"Pending",priority:"High",order:36},
+  {title:"Remove Legacy Meeting Block",desc:"Completely remove or deprecate the legacy 'Meeting' feature block.",module:"Scheduling System",role:"Shared (Global)",type:"Cleanup",status:"Pending",priority:"Medium",order:37},
+  {title:"Pricing Page",desc:"Pricing Page (per Figma design).",module:"Landing Page",role:"Shared (Global)",type:"Feature",status:"DONE",priority:"Medium",order:38},
+  {title:"Application Page Build",desc:"Make a working Application page based on Figma design.",module:"Application Page",role:"Freelancer",type:"Feature",status:"DONE",priority:"High",order:39},
+  {title:"T&C / Privacy Links on Signup",desc:"Terms and Conditions / Privacy Policy not yet linked on signup page.",module:"Signup Page",role:"Shared (Global)",type:"Bug Fix",status:"In Progress",priority:"Medium",order:40},
+  {title:"Application Page Clear All Fix",desc:"Clear All buttons not yet working on Application page.",module:"Application Page",role:"Freelancer",type:"Bug Fix",status:"DONE",priority:"Medium",order:41},
+  {title:"Application Notification Bell",desc:"Changes in Application should appear in notification bell.",module:"Notification System",role:"Freelancer",type:"Feature",status:"Pending",priority:"Medium",order:42},
 ];
 
 // Module → CSS class map
@@ -1598,7 +1608,7 @@ function openSubtasks(fid){
         <span class="prio-dot ${prio}" style="flex-shrink:0"></span>
         <div class="subtask-body">
           <div class="subtask-label${done?' subtask-done':''}">
-            ${s.ticketId?`<span class="card-ticket-id" style="margin-right:4px;">#${esc(s.ticketId)}</span>`:''}${esc(s.desc)}
+            ${s.ticketId?`<span class="card-ticket-id" style="margin-right:4px;">#${esc(s.ticketId)}</span>`:''}${esc(s.title||s.desc)}
           </div>
           <div class="subtask-meta">
             <span>${esc(s.module||'')}</span>
@@ -1707,7 +1717,7 @@ function getFiltered(){
     if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
       if(t.priority!==activeFilter)return false;
     }
-    if(q&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q)&&!(t.ticketId||'').toLowerCase().includes(q))return false;
+    if(q&&!(t.title||'').toLowerCase().includes(q)&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q)&&!(t.ticketId||'').toLowerCase().includes(q))return false;
     return true;
   });
 }
@@ -1847,6 +1857,7 @@ function cardHtml(t){
         </button>
       </div>
     </div>
+    ${t.title?`<div class="card-title${isDone?' done-text':''}">${highlight(t.title,q)}</div>`:''}
     <div class="card-desc${isDone?' done-text':''}">${highlight(t.desc,q)}</div>
     <div class="card-footer">
       <span class="card-type">${highlight(t.type,q)}</span>
@@ -1904,6 +1915,7 @@ function playDelete(){
 let addModalStatus='Pending';
 function openAddModal(status){
   addModalStatus=status||'Pending';
+  document.getElementById('am-title').value='';
   document.getElementById('am-desc').value='';
   document.getElementById('am-module').value='Messaging System';
   document.getElementById('am-module').style.display='';
@@ -1935,8 +1947,9 @@ function amKeydown(e){
   if(e.key==='Escape'){closeAddModal();}
 }
 async function submitAddModal(){
+  const title=document.getElementById('am-title').value.trim();
+  if(!title){document.getElementById('am-title').focus();return;}
   const desc=document.getElementById('am-desc').value.trim();
-  if(!desc){document.getElementById('am-desc').focus();return;}
   // read values BEFORE closing (closing resets the DOM)
   const modWrap=document.getElementById('am-module-custom-wrap');
   const modVal=modWrap.style.display!=='none'
@@ -1953,7 +1966,7 @@ async function submitAddModal(){
   const parentId=addingSubticketForParent||null;
   addingSubticketForParent=null;
   closeAddModal();
-  const fields={desc,module:modVal,priority,type,role,dueDate,ticketId,status:addModalStatus};
+  const fields={title,desc,module:modVal,priority,type,role,dueDate,ticketId,status:addModalStatus};
   if(parentId) fields.parentId=parentId;
   const ref=await addTaskFS(fields);
   playSuccess();
@@ -2002,6 +2015,7 @@ function selectTask(fid){
 function populateDetail(t){
   document.getElementById('ec-mod-dot').style.background=modColor(t.module);
   document.getElementById('ec-mod-name').textContent=t.module;
+  document.getElementById('d-title').value=t.title||'';
   document.getElementById('d-desc').value=t.desc;
   ['status','priority','type'].forEach(k=>{
     const el=document.getElementById('d-'+k);
