@@ -1229,10 +1229,15 @@ async function undoLog(logId){
   if(l.action==='added'&&l.fid){
     deleteTaskFS(l.fid);
   } else if(l.action==='deleted'&&l.prevData){
-    COL.add({...l.prevData,...userStamp()});
-    logAction('added (undo)',l.prevData.desc||'');
+    // strip null fields so Firestore doesn't reject them
+    const restore={};
+    Object.entries(l.prevData).forEach(([k,v])=>{if(v!==null&&v!==undefined)restore[k]=v;});
+    COL.add({...restore,...userStamp(),createdBy:l.prevData.createdBy||{name:currentUser?.displayName||currentUser?.email}});
+    logAction('added (undo)',l.prevData.title||l.prevData.desc||'');
   } else if((l.action==='edited'||l.action==='moved')&&l.fid&&l.prevData){
-    COL.doc(l.fid).update({...l.prevData,...userStamp()});
+    const restore={};
+    Object.entries(l.prevData).forEach(([k,v])=>{if(v!==null&&v!==undefined)restore[k]=v;});
+    COL.doc(l.fid).update({...restore,...userStamp()});
     logAction('undone',l.taskDesc,null,l.fid);
   }
   await LOGS.doc(logId).update({undone:true});
@@ -1763,7 +1768,7 @@ function updateTaskFS(fid,fields,skipStamp=false){
   const t=tasks.find(x=>x.fid===fid);
   const isMoved=fields.status&&t&&fields.status!==t.status;
   const action=isMoved?`moved from ${t.status} to ${fields.status}`:'edited';
-  const prevData=t?{desc:t.desc||'',status:t.status,priority:t.priority,type:t.type,module:t.module,role:t.role,dueDate:t.dueDate||null,assignee:t.assignee||null}:null;
+  const prevData=t?{title:t.title||'',desc:t.desc||'',status:t.status,priority:t.priority,type:t.type,module:t.module||'',role:t.role||'',dueDate:t.dueDate||null,assignee:t.assignee||null,boardId:t.boardId||'hirush',ticketId:t.ticketId||null,order:t.order??0}:null;
   COL.doc(fid).update(skipStamp?fields:{...fields,...userStamp()});
   logAction(action,t?.desc,prevData,fid);
   if(fields.status==='DONE'&&t?.status!=='DONE') sendNotif('✅ Task done!',t?.desc?.slice(0,60)||'');
@@ -1771,7 +1776,7 @@ function updateTaskFS(fid,fields,skipStamp=false){
 }
 function deleteTaskFS(fid){
   const t=tasks.find(x=>x.fid===fid);
-  const prevData=t?{desc:t.desc||'',status:t.status,priority:t.priority,type:t.type,module:t.module,role:t.role,order:t.order}:null;
+  const prevData=t?{title:t.title||'',desc:t.desc||'',status:t.status,priority:t.priority,type:t.type,module:t.module||'',role:t.role||'',dueDate:t.dueDate||null,assignee:t.assignee||null,boardId:t.boardId||'hirush',ticketId:t.ticketId||null,order:t.order??0,createdBy:t.createdBy||null}:null;
   logAction('deleted',t?.desc,prevData,fid);
   COL.doc(fid).delete();
 }
