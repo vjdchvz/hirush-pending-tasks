@@ -859,7 +859,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
         </div>
         <div class="ec-field">
           <label>Ticket ID</label>
-          <input class="ec-select" type="text" id="d-ticket" placeholder="e.g. HRS-001" onchange="patchActive('ticketId',this.value)"/>
+          <div class="ec-select" id="d-ticket" style="display:flex;align-items:center;color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.03em;user-select:all;">—</div>
         </div>
         <div class="ec-field">
           <label>Due Date</label>
@@ -1726,10 +1726,31 @@ function userStamp(){
     lastEditedAt:firebase.firestore.FieldValue.serverTimestamp(),
   };
 }
+function getBoardPrefix(boardId){
+  const board=allBoards.find(b=>b.id===boardId);
+  const name=board?.name||boardId;
+  // acronym from first letter of each word, uppercase, max 6 chars
+  const acronym=name.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,6)||'TKT';
+  return /^[0-9]/.test(acronym)?'B'+acronym.slice(0,5):acronym;
+}
+
 async function addTaskFS(fields){
   const order=tasks.length?Math.max(...tasks.map(t=>t.order??0))+1:0;
   const clean={};Object.entries(fields).forEach(([k,v])=>{if(v!==null&&v!==undefined&&v!=='')clean[k]=v;});
-  const data={...clean,order,boardId:activeBoardId,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
+
+  // Auto-assign ticket ID via Firestore transaction on meta/counters
+  const prefix=getBoardPrefix(activeBoardId);
+  const counterRef=db.collection('meta').doc('counters');
+  let ticketId;
+  await db.runTransaction(async tx=>{
+    const snap=await tx.get(counterRef);
+    const current=(snap.exists&&snap.data()[prefix])||0;
+    const next=current+1;
+    tx.set(counterRef,{[prefix]:next},{merge:true});
+    ticketId=`${prefix}-${String(next).padStart(3,'0')}`;
+  });
+
+  const data={...clean,order,boardId:activeBoardId,ticketId,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
   const ref=await COL.add(data);
   logAction('added',fields.desc,null,ref.id);
   return ref;
@@ -2082,7 +2103,7 @@ function populateDetail(t){
     roleInput.value='';
   }
   const ticketEl=document.getElementById('d-ticket');
-  if(ticketEl) ticketEl.value=t.ticketId||'';
+  if(ticketEl) ticketEl.textContent=t.ticketId||'—';
   const dueEl=document.getElementById('d-dueDate');
   if(dueEl) dueEl.value=t.dueDate||'';
   renderAssigneeSelect(t);
