@@ -1767,7 +1767,7 @@ async function addTaskFS(fields){
 
   const data={...clean,order,boardId:activeBoardId,ticketId,...userStamp(),createdBy:{name:currentUser?.displayName||currentUser?.email,photo:currentUser?.photoURL||null}};
   const ref=await COL.add(data);
-  logAction('added',fields.desc,null,ref.id);
+  logAction('added',fields.title||fields.desc,null,ref.id);
   return ref;
 }
 function updateTaskFS(fid,fields,skipStamp=false){
@@ -1776,7 +1776,7 @@ function updateTaskFS(fid,fields,skipStamp=false){
   const action=isMoved?`moved from ${t.status} to ${fields.status}`:'edited';
   const prevData=t?{title:t.title||'',desc:t.desc||'',status:t.status,priority:t.priority,type:t.type,module:t.module||'',role:t.role||'',dueDate:t.dueDate||null,assignee:t.assignee||null,boardId:t.boardId||'hirush',ticketId:t.ticketId||null,order:t.order??0}:null;
   COL.doc(fid).update(skipStamp?fields:{...fields,...userStamp()});
-  logAction(action,t?.desc,prevData,fid);
+  logAction(action,t?.title||t?.desc,prevData,fid);
   if(fields.status==='DONE'&&t?.status!=='DONE') sendNotif('✅ Task done!',t?.desc?.slice(0,60)||'');
   if(fields.assignee&&fields.assignee?.email!==t?.assignee?.email) sendNotif('👤 Assigned',`${fields.assignee.name} → "${(t?.desc||'').slice(0,40)}"`);
 }
