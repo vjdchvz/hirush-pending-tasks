@@ -680,6 +680,7 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       Activity <span class="activity-dot" id="activity-dot" style="display:none"></span>
     </button>
     <button class="btn-export" onclick="openEOD()">📋 EOD</button>
+    <button class="btn-export" onclick="dedupTasks()" title="Remove duplicate tasks">🧹 Dedup</button>
     <div class="export-wrap" id="export-wrap">
       <button class="btn-export" onclick="toggleExportMenu(event)">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1434,6 +1435,28 @@ document.addEventListener('click',()=>closeExportMenu());
 
 // ── Export CSV ──
 // ── EOD Report ──
+async function dedupTasks(){
+  const boardTasks=tasks.filter(t=>(t.boardId||'hirush')===activeBoardId&&!t.parentId);
+  const seen=new Map();
+  const toDelete=[];
+  // group by desc — keep the one with lowest order (oldest), delete the rest
+  boardTasks.forEach(t=>{
+    const key=(t.desc||'').trim().toLowerCase();
+    if(!key)return;
+    if(seen.has(key)){
+      toDelete.push(t.fid);
+    } else {
+      seen.set(key,t.fid);
+    }
+  });
+  if(!toDelete.length){alert('No duplicates found!');return;}
+  if(!confirm(`Found ${toDelete.length} duplicate task(s). Delete them?`))return;
+  const batch=db.batch();
+  toDelete.forEach(fid=>batch.delete(COL.doc(fid)));
+  await batch.commit();
+  alert(`Removed ${toDelete.length} duplicate(s).`);
+}
+
 function openEOD(){
   document.getElementById('eod-overlay').classList.add('open');
   const now=new Date();
@@ -2226,9 +2249,16 @@ function onDrop(e,status){
 COL.orderBy('order').onSnapshot(snap=>{
   if(snap.empty&&!seeded){
     seeded=true;
-    const batch=db.batch();
-    SEED.forEach((t,i)=>{batch.set(COL.doc(),{...t,order:i});});
-    batch.commit();
+    // use a sentinel doc to prevent multi-tab double-seeding
+    const sentinelRef=db.collection('meta').doc('hirush-seeded');
+    db.runTransaction(async tx=>{
+      const sentinel=await tx.get(sentinelRef);
+      if(sentinel.exists)return; // already seeded by another tab
+      tx.set(sentinelRef,{at:firebase.firestore.FieldValue.serverTimestamp()});
+      const batch=db.batch();
+      SEED.forEach((t,i)=>{batch.set(COL.doc(),{...t,order:i});});
+      await batch.commit();
+    }).catch(()=>{});
     return;
   }
   tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
