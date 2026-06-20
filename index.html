@@ -1226,21 +1226,27 @@ async function undoLog(logId){
   const snap=await LOGS.doc(logId).get();
   if(!snap.exists)return;
   const l=snap.data();
-  if(l.action==='added'&&l.fid){
-    deleteTaskFS(l.fid);
-  } else if(l.action==='deleted'&&l.prevData){
-    // strip null fields so Firestore doesn't reject them
-    const restore={};
-    Object.entries(l.prevData).forEach(([k,v])=>{if(v!==null&&v!==undefined)restore[k]=v;});
-    COL.add({...restore,...userStamp(),createdBy:l.prevData.createdBy||{name:currentUser?.displayName||currentUser?.email}});
-    logAction('added (undo)',l.prevData.title||l.prevData.desc||'');
-  } else if((l.action==='edited'||l.action==='moved')&&l.fid&&l.prevData){
-    const restore={};
-    Object.entries(l.prevData).forEach(([k,v])=>{if(v!==null&&v!==undefined)restore[k]=v;});
-    COL.doc(l.fid).update({...restore,...userStamp()});
-    logAction('undone',l.taskDesc,null,l.fid);
+  try{
+    if(l.action==='added'&&l.fid){
+      await COL.doc(l.fid).delete();
+      logAction('deleted (undo)',l.taskDesc,null,null);
+    } else if(l.action==='deleted'&&l.prevData){
+      const restore={};
+      Object.entries(l.prevData).forEach(([k,v])=>{if(v!==null&&v!==undefined)restore[k]=v;});
+      await COL.add({...restore,...userStamp(),createdBy:l.prevData.createdBy||{name:currentUser?.displayName||currentUser?.email}});
+      logAction('added (undo)',l.prevData.title||l.prevData.desc||'');
+    } else if((l.action==='edited'||l.action.startsWith('moved'))&&l.fid&&l.prevData){
+      const restore={};
+      Object.entries(l.prevData).forEach(([k,v])=>{if(v!==null&&v!==undefined)restore[k]=v;});
+      await COL.doc(l.fid).update({...restore,...userStamp()});
+      logAction('undone',l.taskDesc,null,l.fid);
+    } else {
+      return; // nothing to undo
+    }
+    await LOGS.doc(logId).update({undone:true});
+  } catch(e){
+    alert('Undo failed: '+e.message);
   }
-  await LOGS.doc(logId).update({undone:true});
 }
 
 // ── Activity panel ──
