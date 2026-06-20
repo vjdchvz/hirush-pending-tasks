@@ -79,7 +79,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"title\": \"Sample Ticket\",\n  \"desc\": \"Description here\",\n  \"priority\": \"High\",\n  \"type\": \"Feature\",\n  \"module\": \"Other\",\n  \"status\": \"Pending\",\n  \"boardId\": \"hirush\"\n}",
+					"raw": "{\n  \"title\": \"Sample Ticket\",\n  \"desc\": \"Description here\",\n  \"priority\": \"High\",\n  \"type\": \"Feature\",\n  \"module\": \"Other\",\n  \"status\": \"Pending\",\n  \"boardId\": \"hirush\",\n  \"dueDate\": \"2026-07-01\",\n  \"assignee\": \"Victor\"\n}",
 					"options": { "raw": { "language": "json" } }
 				},
 				"url": {
@@ -88,7 +88,7 @@
 					"host": ["sob-api", "victorjhondechavez", "workers", "dev"],
 					"path": ["tickets"]
 				},
-				"description": "Create a new ticket. priority: High|Medium|Low, type: Bug Fix|Feature|UI Improvement, status: Pending|In Progress|DONE"
+				"description": "Create a new ticket. ticketId is auto-assigned (HIR-XXX) — do not pass it. priority: High|Medium|Low, type: Bug Fix|Feature|UI Improvement, status: Pending|In Progress|DONE"
 			},
 			"response": []
 		},
@@ -113,7 +113,7 @@
 					"path": ["tickets", ":id"],
 					"variable": [{ "key": "id", "value": "", "description": "Ticket document ID from Firestore" }]
 				},
-				"description": "Update any fields on a ticket. Allowed: title, desc, module, priority, type, role, status, ticketId, dueDate, assignee, boardId"
+				"description": "Update any fields on a ticket. Allowed: title, desc, module, priority, type, role, status, dueDate, assignee, boardId. ticketId cannot be changed."
 			},
 			"response": []
 		}
