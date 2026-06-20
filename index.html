@@ -994,10 +994,6 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       </div>
       <div class="am-row">
         <div class="am-field">
-          <label for="am-ticket">Ticket ID (optional)</label>
-          <input class="am-select" type="text" id="am-ticket" placeholder="e.g. HRS-001"/>
-        </div>
-        <div class="am-field">
           <label for="am-dueDate">Due Date (optional)</label>
           <input class="am-select" type="date" id="am-dueDate"/>
         </div>
@@ -1978,7 +1974,6 @@ function openAddModal(status){
   document.getElementById('am-role').style.display='';
   document.getElementById('am-role-custom-wrap').style.display='none';
   document.getElementById('am-role-custom').value='';
-  document.getElementById('am-ticket').value='';
   document.getElementById('am-dueDate').value='';
   const badge=document.getElementById('am-col-badge');
   const cls={Pending:'pending','In Progress':'inprog',DONE:'done'}[addModalStatus]||'pending';
@@ -2013,11 +2008,10 @@ async function submitAddModal(){
     ?(document.getElementById('am-role-custom').value.trim()||'Others')
     :document.getElementById('am-role').value;
   const dueDate=document.getElementById('am-dueDate').value||null;
-  const ticketId=document.getElementById('am-ticket').value.trim()||null;
   const parentId=addingSubticketForParent||null;
   addingSubticketForParent=null;
   closeAddModal();
-  const fields={title,desc,module:modVal,priority,type,role,dueDate,ticketId,status:addModalStatus};
+  const fields={title,desc,module:modVal,priority,type,role,dueDate,status:addModalStatus};
   if(parentId) fields.parentId=parentId;
   const ref=await addTaskFS(fields);
   playSuccess();
