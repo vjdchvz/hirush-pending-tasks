@@ -130,9 +130,10 @@ function formatTicketId(prefix, num) {
   return `${prefix.toUpperCase()}-${String(num).padStart(3, '0')}`;
 }
 
-function getBoardPrefix(boardId) {
+function getBoardPrefix(boardId, boardName) {
   if (boardId === 'hirush') return 'HIR';
-  const words = boardId.replace(/[^a-zA-Z0-9\s]/g, ' ').trim().split(/\s+/);
+  const name = (boardName || boardId).replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+  const words = name.split(/\s+/);
   const prefix = words.length === 1
     ? words[0].slice(0, 3).toUpperCase()
     : words.map(w => w[0] || '').join('').toUpperCase().slice(0, 6) || 'TKT';
@@ -227,8 +228,14 @@ export default {
         if (dueDate) task.dueDate = dueDate;
         if (assignee) task.assignee = assignee;
 
-        // Auto-assign ticketId
-        const boardPrefix = getBoardPrefix(boardId);
+        // Auto-assign ticketId — look up board name for correct prefix
+        let boardName = boardId;
+        if (boardId !== 'hirush') {
+          const boardDoc = await fetch(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/boards/${boardId}`, { headers: { 'Authorization': `Bearer ${fsToken}` } });
+          const boardJson = await boardDoc.json();
+          boardName = boardJson.fields?.name?.stringValue || boardId;
+        }
+        const boardPrefix = getBoardPrefix(boardId, boardName);
         const ticketNum = await getNextTicketId(projectId, boardPrefix, fsToken);
         task.ticketId = formatTicketId(boardPrefix, ticketNum);
 
@@ -333,6 +340,14 @@ export default {
           .map(doc => ({ id: doc.name.split('/').pop(), docName: doc.name, ...fromFirestoreDoc(doc) }))
           .filter(t => !t.parentId);
 
+        // Fetch board names for correct prefix derivation
+        const boardsRes = await fetch(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/boards`, { headers: { 'Authorization': `Bearer ${fsToken}` } });
+        const boardsJson = await boardsRes.json();
+        const boardNames = {};
+        for (const doc of (boardsJson.documents || [])) {
+          boardNames[doc.name.split('/').pop()] = doc.fields?.name?.stringValue || '';
+        }
+
         // Group by boardId (no boardId = legacy hirush)
         const groups = {};
         for (const t of allTickets) {
@@ -347,7 +362,7 @@ export default {
         const counterFields = {};
 
         for (const [bid, tickets] of Object.entries(groups)) {
-          const prefix = getBoardPrefix(bid);
+          const prefix = getBoardPrefix(bid, boardNames[bid] || '');
           tickets.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
           results[bid] = [];
           let counter = 0;
