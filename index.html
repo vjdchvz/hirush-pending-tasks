@@ -614,8 +614,12 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 .export-menu.open{display:block;}
 .export-item{padding:8px 14px;font-size:12px;color:var(--t1);cursor:pointer;white-space:nowrap;}
 .export-item:hover{background:var(--bg);}
-.export-item--section{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;padding:10px 14px 4px;cursor:default;pointer-events:none;}
+.export-item--section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:10px 14px 4px;cursor:default;pointer-events:none;border-top:1px solid var(--bd);margin-top:4px;}
+.export-item--section:first-child{border-top:none;margin-top:0;}
 .export-item--section:hover{background:transparent;}
+.export-item--section.section--reports{color:#2563eb;}
+.export-item--section.section--export{color:#16a34a;}
+.export-item--section.section--tools{color:#d97706;}
 [data-theme="dark"] .export-menu{background:#1c2128;border-color:var(--bd);}
 [data-theme="dark"] .export-item:hover{background:#0d1117;}
 .eod-modal{background:var(--white);border-radius:16px;width:580px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.25);}
@@ -684,14 +688,14 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
     <div class="export-wrap" id="settings-wrap">
       <button class="btn-export" onclick="toggleSettingsMenu(event)">⚙️ Settings ▾</button>
       <div class="export-menu" id="settings-menu">
-        <div class="export-item export-item--section">📊 Reports</div>
+        <div class="export-item export-item--section section--reports">📊 Reports</div>
         <div class="export-item" onclick="openEOD();closeSettingsMenu()">📋 EOD Report</div>
-        <div class="export-item export-item--section">📤 Export</div>
+        <div class="export-item export-item--section section--export">📤 Export</div>
         <div class="export-item" onclick="exportCSV();closeSettingsMenu()">📋 All tasks</div>
         <div class="export-item" onclick="exportCSV('In Progress');closeSettingsMenu()">🔄 In Progress only</div>
         <div class="export-item" onclick="exportCSV('Pending');closeSettingsMenu()">⏳ Pending only</div>
         <div class="export-item" onclick="exportCSV('DONE');closeSettingsMenu()">✅ Done only</div>
-        <div class="export-item export-item--section">🛠️ Tools</div>
+        <div class="export-item export-item--section section--tools">🛠️ Tools</div>
         <div class="export-item" onclick="dedupTasks();closeSettingsMenu()">🧹 Remove duplicates</div>
       </div>
     </div>
