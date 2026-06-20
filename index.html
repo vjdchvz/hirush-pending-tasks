@@ -614,6 +614,8 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
 .export-menu.open{display:block;}
 .export-item{padding:8px 14px;font-size:12px;color:var(--t1);cursor:pointer;white-space:nowrap;}
 .export-item:hover{background:var(--bg);}
+.export-item--section{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;padding:10px 14px 4px;cursor:default;pointer-events:none;}
+.export-item--section:hover{background:transparent;}
 [data-theme="dark"] .export-menu{background:#1c2128;border-color:var(--bd);}
 [data-theme="dark"] .export-item:hover{background:#0d1117;}
 .eod-modal{background:var(--white);border-radius:16px;width:580px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.25);}
@@ -679,18 +681,18 @@ mark{background:#fff0b3;color:#172b4d;border-radius:2px;padding:0 1px;}
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Activity <span class="activity-dot" id="activity-dot" style="display:none"></span>
     </button>
-    <button class="btn-export" onclick="openEOD()">📋 EOD</button>
-    <button class="btn-export" onclick="dedupTasks()" title="Remove duplicate tasks">🧹 Dedup</button>
-    <div class="export-wrap" id="export-wrap">
-      <button class="btn-export" onclick="toggleExportMenu(event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export ▾
-      </button>
-      <div class="export-menu" id="export-menu">
-        <div class="export-item" onclick="exportCSV();closeExportMenu()">📋 All tasks</div>
-        <div class="export-item" onclick="exportCSV('In Progress');closeExportMenu()">🔄 In Progress only</div>
-        <div class="export-item" onclick="exportCSV('Pending');closeExportMenu()">⏳ Pending only</div>
-        <div class="export-item" onclick="exportCSV('DONE');closeExportMenu()">✅ Done only</div>
+    <div class="export-wrap" id="settings-wrap">
+      <button class="btn-export" onclick="toggleSettingsMenu(event)">⚙️ Settings ▾</button>
+      <div class="export-menu" id="settings-menu">
+        <div class="export-item export-item--section">📊 Reports</div>
+        <div class="export-item" onclick="openEOD();closeSettingsMenu()">📋 EOD Report</div>
+        <div class="export-item export-item--section">📤 Export</div>
+        <div class="export-item" onclick="exportCSV();closeSettingsMenu()">📋 All tasks</div>
+        <div class="export-item" onclick="exportCSV('In Progress');closeSettingsMenu()">🔄 In Progress only</div>
+        <div class="export-item" onclick="exportCSV('Pending');closeSettingsMenu()">⏳ Pending only</div>
+        <div class="export-item" onclick="exportCSV('DONE');closeSettingsMenu()">✅ Done only</div>
+        <div class="export-item export-item--section">🛠️ Tools</div>
+        <div class="export-item" onclick="dedupTasks();closeSettingsMenu()">🧹 Remove duplicates</div>
       </div>
     </div>
     <button class="btn-dark" onclick="toggleDark()" id="dark-btn">
@@ -1434,9 +1436,9 @@ function sendNotif(title,body){
 }
 
 // ── Export menu ──
-function toggleExportMenu(e){e.stopPropagation();document.getElementById('export-menu').classList.toggle('open');}
-function closeExportMenu(){document.getElementById('export-menu').classList.remove('open');}
-document.addEventListener('click',()=>closeExportMenu());
+function toggleSettingsMenu(e){e.stopPropagation();document.getElementById('settings-menu').classList.toggle('open');}
+function closeSettingsMenu(){document.getElementById('settings-menu').classList.remove('open');}
+document.addEventListener('click',()=>closeSettingsMenu());
 
 // ── Export CSV ──
 // ── EOD Report ──
