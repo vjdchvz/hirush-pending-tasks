@@ -132,7 +132,8 @@ function formatTicketId(prefix, num) {
 
 function getBoardPrefix(boardId, boardName) {
   if (boardId === 'hirush') return 'HIR';
-  const name = (boardName || boardId).replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+  // split on spaces AND camelCase boundaries (e.g. "OverBoard" → ["Over","Board"])
+  const name = (boardName || boardId).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
   const words = name.split(/\s+/);
   const prefix = words.length === 1
     ? words[0].slice(0, 3).toUpperCase()

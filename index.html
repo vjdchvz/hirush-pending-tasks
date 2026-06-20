@@ -1729,7 +1729,7 @@ function userStamp(){
 function getBoardPrefix(boardId){
   if(boardId==='hirush') return 'HIR';
   const board=allBoards.find(b=>b.id===boardId);
-  const name=(board?.name||boardId).trim();
+  const name=(board?.name||boardId).replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[^a-zA-Z0-9\s]/g,' ').trim();
   const words=name.split(/\s+/);
   // single word → first 3 chars; multi-word → initials of each word (max 6)
   const prefix=words.length===1
