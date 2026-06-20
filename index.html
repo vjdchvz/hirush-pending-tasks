@@ -2250,12 +2250,11 @@ COL.orderBy('order').onSnapshot(snap=>{
   if(snap.empty&&!seeded){
     seeded=true;
     // tasks are empty (wiped or first load) — always re-seed
-    // seeded JS var prevents same tab from re-seeding twice in one session
     const sentinelRef=db.collection('meta').doc('hirush-seeded');
     const batch=db.batch();
     SEED.forEach((t,i)=>{batch.set(COL.doc(),{...t,order:i});});
     batch.set(sentinelRef,{at:firebase.firestore.FieldValue.serverTimestamp()});
-    batch.commit().catch(()=>{});
+    batch.commit().catch(e=>console.error('Seed failed:',e));
     return;
   }
   tasks=snap.docs.map(d=>({...d.data(),fid:d.id}));
@@ -2265,6 +2264,9 @@ COL.orderBy('order').onSnapshot(snap=>{
     const t=tasks.find(x=>x.fid===activeId);
     if(t&&document.activeElement!==document.getElementById('d-module-custom')) populateDetail(t);
   }
+},err=>{
+  console.error('Firestore onSnapshot error:',err);
+  document.getElementById('board-columns').innerHTML=`<div style="padding:2rem;color:red">⚠️ Failed to load tasks: ${err.message}</div>`;
 });
 
 document.getElementById('del-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDel();});
