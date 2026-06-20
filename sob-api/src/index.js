@@ -130,6 +130,15 @@ function formatTicketId(prefix, num) {
   return `${prefix.toUpperCase()}-${String(num).padStart(3, '0')}`;
 }
 
+function getBoardPrefix(boardId) {
+  if (boardId === 'hirush') return 'HIR';
+  const words = boardId.replace(/[^a-zA-Z0-9\s]/g, ' ').trim().split(/\s+/);
+  const prefix = words.length === 1
+    ? words[0].slice(0, 3).toUpperCase()
+    : words.map(w => w[0] || '').join('').toUpperCase().slice(0, 6) || 'TKT';
+  return /^[0-9]/.test(prefix) ? 'B' + prefix.slice(0, 5) : prefix;
+}
+
 async function firestoreQuery(projectId, collection, filters, orderBy, limit, token) {
   const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
   const structuredQuery = {
@@ -219,8 +228,7 @@ export default {
         if (assignee) task.assignee = assignee;
 
         // Auto-assign ticketId
-        const rawPrefix = boardId.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
-        const boardPrefix = boardId === 'hirush' ? 'HIR' : (/^[0-9]/.test(rawPrefix) ? 'B' + rawPrefix.slice(0, 5) : rawPrefix);
+        const boardPrefix = getBoardPrefix(boardId);
         const ticketNum = await getNextTicketId(projectId, boardPrefix, fsToken);
         task.ticketId = formatTicketId(boardPrefix, ticketNum);
 
@@ -339,8 +347,7 @@ export default {
         const counterFields = {};
 
         for (const [bid, tickets] of Object.entries(groups)) {
-          const raw = bid.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
-          const prefix = bid === 'hirush' ? 'HIR' : (/^[0-9]/.test(raw) ? 'B' + raw.slice(0, 5) : raw);
+          const prefix = getBoardPrefix(bid);
           tickets.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
           results[bid] = [];
           let counter = 0;

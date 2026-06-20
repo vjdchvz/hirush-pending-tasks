@@ -1727,11 +1727,15 @@ function userStamp(){
   };
 }
 function getBoardPrefix(boardId){
+  if(boardId==='hirush') return 'HIR';
   const board=allBoards.find(b=>b.id===boardId);
-  const name=board?.name||boardId;
-  // acronym from first letter of each word, uppercase, max 6 chars
-  const acronym=name.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,6)||'TKT';
-  return /^[0-9]/.test(acronym)?'B'+acronym.slice(0,5):acronym;
+  const name=(board?.name||boardId).trim();
+  const words=name.split(/\s+/);
+  // single word → first 3 chars; multi-word → initials of each word (max 6)
+  const prefix=words.length===1
+    ?words[0].slice(0,3).toUpperCase()
+    :words.map(w=>w[0]||'').join('').toUpperCase().slice(0,6)||'TKT';
+  return /^[0-9]/.test(prefix)?'B'+prefix.slice(0,5):prefix;
 }
 
 async function addTaskFS(fields){
