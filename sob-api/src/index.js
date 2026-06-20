@@ -190,7 +190,7 @@ export default {
         const {
           title, desc = '', module: mod = 'Other', priority = 'Medium',
           type = 'Feature', role = 'Shared (Global)', status = 'Pending',
-          boardId = 'hirush', ticketId, dueDate, assignee,
+          boardId = 'hirush', dueDate, assignee,
         } = body;
 
         if (!title?.trim()) return Response.json({ error: '`title` is required.' }, { status: 400, headers: cors });
@@ -215,7 +215,6 @@ export default {
           createdBy: { name: 'API', email: 'api@stackoverboard' },
           lastEditedBy: { name: 'API', email: 'api@stackoverboard' },
         };
-        if (ticketId) task.ticketId = ticketId;
         if (dueDate) task.dueDate = dueDate;
         if (assignee) task.assignee = assignee;
 
@@ -300,7 +299,7 @@ export default {
       if (request.method === 'PATCH' && ticketMatch) {
         const id = ticketMatch[1];
         const body = await request.json().catch(() => ({}));
-        const allowed = ['title','desc','module','priority','type','role','status','ticketId','dueDate','assignee','boardId'];
+        const allowed = ['title','desc','module','priority','type','role','status','dueDate','assignee','boardId'];
         const fields = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)));
         if (!Object.keys(fields).length) return Response.json({ error: 'No valid fields to update.' }, { status: 400, headers: cors });
         fields.lastEditedAt = new Date().toISOString();
