@@ -1789,7 +1789,7 @@ function getFiltered(){
     if(activeFilter==='High'||activeFilter==='Medium'||activeFilter==='Low'){
       if(t.priority!==activeFilter)return false;
     }
-    if(q&&!(t.title||'').toLowerCase().includes(q)&&!t.desc.toLowerCase().includes(q)&&!t.module.toLowerCase().includes(q)&&!t.type.toLowerCase().includes(q)&&!(t.ticketId||'').toLowerCase().includes(q))return false;
+    if(q&&!(t.title||'').toLowerCase().includes(q)&&!(t.desc||'').toLowerCase().includes(q)&&!(t.module||'').toLowerCase().includes(q)&&!(t.type||'').toLowerCase().includes(q)&&!(t.ticketId||'').toLowerCase().includes(q))return false;
     return true;
   });
 }
@@ -1930,7 +1930,7 @@ function cardHtml(t){
       </div>
     </div>
     ${t.title?`<div class="card-title${isDone?' done-text':''}">${highlight(t.title,q)}</div>`:''}
-    <div class="card-desc${isDone?' done-text':''}">${highlight(t.desc,q)}</div>
+    <div class="card-desc${isDone?' done-text':''}">${highlight(t.desc||'',q)}</div>
     <div class="card-footer">
       <span class="card-type">${highlight(t.type,q)}</span>
       <span style="display:flex;align-items:center;gap:6px;">${t.subtaskTotal?`<span class="card-subtask-count${t.subtaskDone===t.subtaskTotal?' done':''}">☑ ${t.subtaskDone||0}/${t.subtaskTotal}</span>`:''}${assigneeHtml(t)}${dueBadge(t)}</span>
@@ -2086,7 +2086,7 @@ function populateDetail(t){
   document.getElementById('ec-mod-dot').style.background=modColor(t.module);
   document.getElementById('ec-mod-name').textContent=t.module;
   document.getElementById('d-title').value=t.title||'';
-  document.getElementById('d-desc').value=t.desc;
+  document.getElementById('d-desc').value=t.desc||'';
   ['status','priority','type'].forEach(k=>{
     const el=document.getElementById('d-'+k);
     if(el)el.value=t[k]||'';
