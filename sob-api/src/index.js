@@ -219,7 +219,8 @@ export default {
         if (assignee) task.assignee = assignee;
 
         // Auto-assign ticketId
-        const boardPrefix = boardId === 'hirush' ? 'HIR' : boardId.toUpperCase().slice(0, 6);
+        const rawPrefix = boardId.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
+        const boardPrefix = boardId === 'hirush' ? 'HIR' : (/^[0-9]/.test(rawPrefix) ? 'B' + rawPrefix.slice(0, 5) : rawPrefix);
         const ticketNum = await getNextTicketId(projectId, boardPrefix, fsToken);
         task.ticketId = formatTicketId(boardPrefix, ticketNum);
 
@@ -308,47 +309,60 @@ export default {
         return Response.json({ id, message: 'Ticket updated.', updated: fields }, { headers: cors });
       }
 
-      // POST /admin/backfill-ids — assigns HIR-XXX to all parent tickets (overwrites existing)
+      // POST /admin/backfill-ids — assigns board-prefixed IDs to all parent tickets across all boards
       if (request.method === 'POST' && path === '/admin/backfill-ids') {
         const fsToken = await getFirestoreToken(env);
 
-        // List ALL task documents (no filter, no orderBy limitation)
+        // List ALL task documents
         const listUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/tasks?pageSize=500`;
         const listRes = await fetch(listUrl, { headers: { 'Authorization': `Bearer ${fsToken}` } });
         const listJson = await listRes.json();
         const allDocs = listJson.documents || [];
 
         const seenDocs = new Set();
-        const tickets = allDocs
+        const allTickets = allDocs
           .filter(doc => { if (seenDocs.has(doc.name)) return false; seenDocs.add(doc.name); return true; })
           .map(doc => ({ id: doc.name.split('/').pop(), docName: doc.name, ...fromFirestoreDoc(doc) }))
-          .filter(t => !t.parentId)
-          .filter(t => !t.boardId || t.boardId === 'hirush')
-          .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+          .filter(t => !t.parentId);
 
-        // Assign fresh sequential IDs to all parent tickets
-        let counter = 0;
-        const results = [];
-        const writes = tickets.map(t => {
-          counter++;
-          const ticketId = formatTicketId('HIR', counter);
-          results.push({ id: t.id, ticketId });
-          return {
-            update: {
-              name: t.docName,
-              fields: { ticketId: toFirestoreValue(ticketId) },
-            },
-            updateMask: { fieldPaths: ['ticketId'] },
-          };
-        });
+        // Group by boardId (no boardId = legacy hirush)
+        const groups = {};
+        for (const t of allTickets) {
+          const bid = t.boardId || 'hirush';
+          if (!groups[bid]) groups[bid] = [];
+          groups[bid].push(t);
+        }
 
-        // Also update the counter doc in the same batch
+        // Sort each group by order and assign sequential IDs
+        const writes = [];
+        const results = {};
+        const counterFields = {};
+
+        for (const [bid, tickets] of Object.entries(groups)) {
+          const raw = bid.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
+          const prefix = bid === 'hirush' ? 'HIR' : (/^[0-9]/.test(raw) ? 'B' + raw.slice(0, 5) : raw);
+          tickets.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+          results[bid] = [];
+          let counter = 0;
+          for (const t of tickets) {
+            counter++;
+            const ticketId = formatTicketId(prefix, counter);
+            results[bid].push({ id: t.id, ticketId });
+            writes.push({
+              update: { name: t.docName, fields: { ticketId: toFirestoreValue(ticketId) } },
+              updateMask: { fieldPaths: ['ticketId'] },
+            });
+          }
+          counterFields[prefix] = toFirestoreValue(counter);
+        }
+
+        // Update all counters in the same batch
         writes.push({
           update: {
             name: `projects/${projectId}/databases/(default)/documents/meta/counters`,
-            fields: { HIR: toFirestoreValue(counter) },
+            fields: counterFields,
           },
-          updateMask: { fieldPaths: ['HIR'] },
+          updateMask: { fieldPaths: Object.keys(counterFields) },
         });
 
         const batchUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:batchWrite`;
@@ -360,7 +374,8 @@ export default {
         const batchJson = await batchRes.json();
         if (batchJson.error) return Response.json({ error: batchJson.error }, { status: 500, headers: cors });
 
-        return Response.json({ message: `Backfilled ${results.length} tickets. Counter set to ${counter}.`, results }, { headers: cors });
+        const total = Object.values(results).reduce((s, r) => s + r.length, 0);
+        return Response.json({ message: `Backfilled ${total} tickets across ${Object.keys(results).length} board(s).`, boards: results }, { headers: cors });
       }
 
       return Response.json({ error: 'Not found.', routes: ['GET /boards', 'GET /tickets', 'GET /tickets/:id', 'POST /tickets', 'PATCH /tickets/:id', 'POST /admin/backfill-ids'] }, { status: 404, headers: cors });
