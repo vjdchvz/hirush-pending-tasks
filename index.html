@@ -1177,7 +1177,7 @@ function startPresence(user){
     const now=Date.now();
     const online=snap.docs.filter(d=>{
       const ts=d.data().lastSeen;
-      return ts && (now - ts.toDate().getTime()) < 90000;
+      return ts && (now - tsToDate(ts).getTime()) < 90000;
     });
     const key=online.map(d=>d.id).sort().join(',');
     if(key===lastOnlineKey)return;
@@ -1273,7 +1273,7 @@ function renderActivityLog(snap,boardId){
     const isMoveAction=l.action&&l.action.startsWith('moved from');
     const baseAction=isMoveAction?'moved':l.action;
     const badgeCls={added:'ab-add',edited:'ab-edit',deleted:'ab-del',moved:'ab-move'}[baseAction]||'ab-edit';
-    const timeStr=l.ts?timeAgo(l.ts.toDate()):'-';
+    const timeStr=l.ts?timeAgo(tsToDate(l.ts)):'-';
     const canUndo=['added','edited','moved','deleted'].includes(baseAction)&&!l.undone;
     const moveDetail=isMoveAction?`<div style="font-size:10px;color:var(--t3);margin-top:2px;">${esc(l.action)}</div>`:'';
     const undoHtml=canUndo
@@ -1304,6 +1304,11 @@ function strColor(name){
   return `hsl(${h},55%,40%)`;
 }
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function tsToDate(v){
+  if(!v) return null;
+  if(typeof v.toDate==='function') return v.toDate();
+  return new Date(v);
+}
 function timeAgo(date){
   const s=Math.floor((Date.now()-date)/1000);
   if(s<60)return 'just now';
@@ -1500,7 +1505,7 @@ function openEOD(){
             const baseAction=isMoveAction?'moved':l.action;
             const style=badgeStyle[baseAction]||'background:#f4f5f7;color:#5e6c84';
             const detail=isMoveAction?`<span class="eod-row-detail">(${esc(l.action)})</span>`:'';
-            const time=l.ts?l.ts.toDate().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'';
+            const time=l.ts?tsToDate(l.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'';
             return `<div class="eod-row">
               <span class="eod-badge" style="${style}">${esc(baseAction)}</span>
               <span class="eod-row-desc">${esc((l.taskDesc||'').slice(0,60))}${detail}</span>
@@ -1597,7 +1602,7 @@ function openComments(fid){
       const c=d.data(),u=c.user||{};
       const av=u.photo?`<img class="comment-av" src="${esc(u.photo)}" alt=""/>`:`<div class="comment-av-fb" style="background:${strColor(u.name||'?')}">${initials(u.name||'?')}</div>`;
       const commentHtml=esc(c.text).replace(/https?:\/\/[^\s<>"]+/g,url=>`<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--brand);word-break:break-all;">${url}</a>`);
-      return `<div class="comment-item">${av}<div class="comment-body"><div class="comment-meta"><span class="comment-author">${esc(u.name||u.email||'')}</span><span class="comment-time">${c.ts?timeAgo(c.ts.toDate()):''}</span></div><div class="comment-text">${commentHtml}</div></div></div>`;
+      return `<div class="comment-item">${av}<div class="comment-body"><div class="comment-meta"><span class="comment-author">${esc(u.name||u.email||'')}</span><span class="comment-time">${c.ts?timeAgo(tsToDate(c.ts)):''}</span></div><div class="comment-text">${commentHtml}</div></div></div>`;
     }).join('');
   });
 }
@@ -1867,7 +1872,7 @@ function cardStamp(t){
   const avatarHtml=e.photo
     ?`<img src="${esc(e.photo)}" style="width:14px;height:14px;border-radius:50%;object-fit:cover;" alt="${esc(e.name||'')}"/>`
     :`<span class="card-stamp-fb" style="background:${strColor(e.name||'?')}">${initials(e.name||e.email||'?')}</span>`;
-  const when=t.lastEditedAt?timeAgo(t.lastEditedAt.toDate()):'';
+  const when=t.lastEditedAt?timeAgo(tsToDate(t.lastEditedAt)):'';
   return `<div class="card-stamp">${avatarHtml}<span>${esc(e.name||e.email||'')}${when?' · '+when:''}</span></div>`;
 }
 
@@ -2102,7 +2107,7 @@ function populateDetail(t){
     const av=u.photo
       ?`<img class="ec-stamp-av" src="${esc(u.photo)}" alt=""/>`
       :`<div class="ec-stamp-av" style="background:${strColor(u.name||'?')}">${initials(u.name||'?')}</div>`;
-    const when=t.lastEditedAt?timeAgo(t.lastEditedAt.toDate()):'';
+    const when=t.lastEditedAt?timeAgo(tsToDate(t.lastEditedAt)):'';
     stamp.innerHTML=`${av}&nbsp;Last edited by <strong>${esc(u.name||u.email||'')}</strong>${when?' · '+when:''}`;
   } else { stamp.innerHTML=''; }
 }
