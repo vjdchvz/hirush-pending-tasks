@@ -2238,7 +2238,8 @@ function clearPrio(){playTick();activeFilter='all';document.querySelector('[data
 function openDel(fid){
   delId=fid;
   const t=tasks.find(x=>x.fid===fid);
-  document.getElementById('del-desc').textContent=t?`"${t.desc.slice(0,80)}${t.desc.length>80?'…':''}"`:'This action cannot be undone.';
+  const d=t?.title||t?.desc||'';
+  document.getElementById('del-desc').textContent=t?`"${d.slice(0,80)}${d.length>80?'…':''}"`:'This action cannot be undone.';
   document.getElementById('del-overlay').classList.add('open');
 }
 function closeDel(){document.getElementById('del-overlay').classList.remove('open');delId=null;}
