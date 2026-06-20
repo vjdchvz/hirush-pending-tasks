@@ -1,0 +1,121 @@
+{
+	"info": {
+		"_postman_id": "ac19947b-a85b-40d5-9037-7eb7e6e1bea0",
+		"name": "Stack OverBoard API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "ff99fdf877f168b50fc125c77505713935968520d685878d1e07ef9e04017c51",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "GET Boards",
+			"request": {
+				"auth": { "type": "noauth" },
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer ff99fdf877f168b50fc125c77505713935968520d685878d1e07ef9e04017c51" }],
+				"url": {
+					"raw": "https://sob-api.victorjhondechavez.workers.dev/boards",
+					"protocol": "https",
+					"host": ["sob-api", "victorjhondechavez", "workers", "dev"],
+					"path": ["boards"]
+				},
+				"description": "List all boards with their IDs and names."
+			},
+			"response": []
+		},
+		{
+			"name": "GET List Tickets",
+			"request": {
+				"auth": { "type": "noauth" },
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer ff99fdf877f168b50fc125c77505713935968520d685878d1e07ef9e04017c51" }],
+				"url": {
+					"raw": "https://sob-api.victorjhondechavez.workers.dev/tickets?boardId=hirush",
+					"protocol": "https",
+					"host": ["sob-api", "victorjhondechavez", "workers", "dev"],
+					"path": ["tickets"],
+					"query": [
+						{ "key": "boardId", "value": "hirush", "description": "Board ID (get from GET /boards)" },
+						{ "key": "status", "value": null, "description": "Optional: Pending | In Progress | DONE", "disabled": true }
+					]
+				},
+				"description": "List all tickets for a board. Use GET /boards to find board IDs."
+			},
+			"response": []
+		},
+		{
+			"name": "GET Single Ticket",
+			"request": {
+				"auth": { "type": "noauth" },
+				"method": "GET",
+				"header": [{ "key": "Authorization", "value": "Bearer ff99fdf877f168b50fc125c77505713935968520d685878d1e07ef9e04017c51" }],
+				"url": {
+					"raw": "https://sob-api.victorjhondechavez.workers.dev/tickets/:id",
+					"protocol": "https",
+					"host": ["sob-api", "victorjhondechavez", "workers", "dev"],
+					"path": ["tickets", ":id"],
+					"variable": [{ "key": "id", "value": "", "description": "Ticket document ID from Firestore" }]
+				},
+				"description": "Get a single ticket by its Firestore document ID."
+			},
+			"response": []
+		},
+		{
+			"name": "POST Create Ticket",
+			"request": {
+				"auth": { "type": "noauth" },
+				"method": "POST",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer ff99fdf877f168b50fc125c77505713935968520d685878d1e07ef9e04017c51" },
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Sample Ticket\",\n  \"desc\": \"Description here\",\n  \"priority\": \"High\",\n  \"type\": \"Feature\",\n  \"module\": \"Other\",\n  \"status\": \"Pending\",\n  \"boardId\": \"hirush\"\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "https://sob-api.victorjhondechavez.workers.dev/tickets",
+					"protocol": "https",
+					"host": ["sob-api", "victorjhondechavez", "workers", "dev"],
+					"path": ["tickets"]
+				},
+				"description": "Create a new ticket. priority: High|Medium|Low, type: Bug Fix|Feature|UI Improvement, status: Pending|In Progress|DONE"
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH Update Ticket",
+			"request": {
+				"auth": { "type": "noauth" },
+				"method": "PATCH",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer ff99fdf877f168b50fc125c77505713935968520d685878d1e07ef9e04017c51" },
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"In Progress\",\n  \"priority\": \"High\"\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "https://sob-api.victorjhondechavez.workers.dev/tickets/:id",
+					"protocol": "https",
+					"host": ["sob-api", "victorjhondechavez", "workers", "dev"],
+					"path": ["tickets", ":id"],
+					"variable": [{ "key": "id", "value": "", "description": "Ticket document ID from Firestore" }]
+				},
+				"description": "Update any fields on a ticket. Allowed: title, desc, module, priority, type, role, status, ticketId, dueDate, assignee, boardId"
+			},
+			"response": []
+		}
+	]
+}
