@@ -201,7 +201,7 @@ export default {
         const {
           title, desc = '', module: mod = 'Other', priority = 'Medium',
           type = 'Feature', role = 'Shared (Global)', status = 'Pending',
-          boardId = 'hirush', dueDate, assignee,
+          boardId = 'hirush', dueDate, assignee, createdBy,
         } = body;
 
         if (!title?.trim()) return Response.json({ error: '`title` is required.' }, { status: 400, headers: cors });
@@ -223,8 +223,8 @@ export default {
           title: title.trim(), desc: desc.trim(), module: mod,
           priority, type, role, status, boardId, order: maxOrder,
           createdAt: now, lastEditedAt: now,
-          createdBy: { name: 'API', email: 'api@stackoverboard' },
-          lastEditedBy: { name: 'API', email: 'api@stackoverboard' },
+          createdBy: createdBy || { name: 'API', email: 'api@stackoverboard' },
+          lastEditedBy: createdBy || { name: 'API', email: 'api@stackoverboard' },
         };
         if (dueDate) task.dueDate = dueDate;
         if (assignee) task.assignee = assignee;
