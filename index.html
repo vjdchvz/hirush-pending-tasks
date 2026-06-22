@@ -2170,6 +2170,26 @@ function resetRoleSelect(selId, customId){
   input.value='';
   if(selId==='d-role') patchActive('role','Shared (Global)');
 }
+const MODULE_ROLE_MAP = {
+  'Find Talent':           'Client',
+  'Job Posting':           'Client',
+  'Find Work':             'Freelancer',
+  'Create Profile Page':   'Freelancer',
+  'Application':           'Freelancer',
+  'Messaging System':      'Shared (Global)',
+  'Profile Page':          'Shared (Global)',
+  'Contracts & Tracking':  'Shared (Global)',
+  'Payment Gateway':       'Shared (Global)',
+  'Notification System':   'Shared (Global)',
+  'Search & Discovery':    'Shared (Global)',
+  'User Management':       'Shared (Global)',
+  'Account Settings':      'Shared (Global)',
+  'Scheduling System':     'Shared (Global)',
+  'Landing Page':          'Visitor',
+  'Other':                 'Shared (Global)',
+};
+function getRoleForModule(mod){ return MODULE_ROLE_MAP[mod] || 'Shared (Global)'; }
+
 function onModuleChange(sel, customId){
   const wrap = document.getElementById(customId+'-wrap');
   const input = document.getElementById(customId);
@@ -2178,7 +2198,19 @@ function onModuleChange(sel, customId){
     wrap.style.display = 'block';
     input.focus();
   } else {
-    if(sel.id === 'd-module') patchActive('module', sel.value);
+    if(sel.id === 'd-module'){
+      patchActive('module', sel.value);
+      // auto-update role in detail panel
+      const role = getRoleForModule(sel.value);
+      const roleEl = document.getElementById('d-role');
+      if(roleEl) roleEl.value = role;
+      patchActive('role', role);
+    } else if(sel.id === 'am-module'){
+      // auto-set role in add modal
+      const role = getRoleForModule(sel.value);
+      const roleEl = document.getElementById('am-role');
+      if(roleEl) roleEl.value = role;
+    }
   }
 }
 function resetModuleSelect(selId, customId, fid){
